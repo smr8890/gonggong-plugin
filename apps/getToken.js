@@ -1,5 +1,7 @@
 import fs from 'fs';
 
+export const host = 'http://110.41.16.52:8000';
+
 export class GetToken extends plugin {
     constructor() {
         super({
@@ -50,7 +52,7 @@ export class GetToken extends plugin {
             token: ''
         };
 
-        const response = await fetch('http://175.178.63.53:8000/login', {
+        const response = await fetch(`${host}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -118,7 +120,7 @@ export class GetToken extends plugin {
 
         const { username, password } = userList[userId];
 
-        const response = await fetch('http://175.178.63.53:8000/login', {
+        const response = await fetch(`${host}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
