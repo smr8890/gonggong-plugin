@@ -25,17 +25,9 @@ export class GetToken extends plugin {
                 {
                     reg: '^#?删除账号$',
                     fnc: 'deleteAccount'
-                },
-                {
-                    reg: '^#?测试$',
-                    fnc: 'test'
                 }
             ]
         });
-    }
-
-    async test(e) {
-        console.log(api_address);
     }
 
     async setAccount(e) {
@@ -43,7 +35,7 @@ export class GetToken extends plugin {
         //#设置账号 学号 密码
         const [username, password] = e.raw_message.split(/\s+/).slice(1);
         if (!username || !password) {
-            return this.reply('请正确输入学号和密码');
+            return this.reply('请正确输入账号和密码');
         }
         const path = './data/xtu-gong/userlist.json';
 
@@ -87,7 +79,7 @@ export class GetToken extends plugin {
         //#设置Token token
         const token = e.raw_message.split(/\s+/).slice(1)[0];
         if (!token) {
-            return this.reply('请正确输入Token');
+            return this.reply('请正确输入token');
         }
         const path = './data/xtu-gong/userlist.json';
 
@@ -137,17 +129,17 @@ export class GetToken extends plugin {
         });
 
         if (!response.ok) {
-            return this.reply('刷新Token失败，请检查账号和密码');
+            return this.reply('刷新token失败，请检查账号和密码');
         }
 
         const result = await response.json();
         if (result.code !== 1) {
-            return this.reply('刷新Token失败，请检查账号和密码');
+            return this.reply('刷新token失败，请检查账号和密码');
         }
 
         userList[userId].token = result.data.token;
         fs.writeFileSync(path, JSON.stringify(userList, null, 2), 'utf8');
-        return this.reply('Token刷新成功');
+        return this.reply('token刷新成功');
     }
 
     async deleteAccount(e) {
