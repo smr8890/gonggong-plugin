@@ -1,6 +1,5 @@
 import fs from 'fs';
-
-export const host = 'http://110.41.16.52:8000';
+import { host } from '../components/index.js';
 
 export class GetToken extends plugin {
     constructor() {
