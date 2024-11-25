@@ -1,3 +1,6 @@
+const _PATH = process.cwd().replace(/\\/g, "/");
 const Plugin_Name = "xtu-gong-plugin";
-const host = '';
-export { Plugin_Name, host };
+const Plugin_Path = `${_PATH}/plugins/${Plugin_Name}`;
+import Config from './Config.js';
+
+export { _PATH, Plugin_Name, Plugin_Path, Config };

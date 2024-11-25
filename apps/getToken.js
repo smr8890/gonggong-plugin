@@ -1,5 +1,6 @@
 import fs from 'fs';
-import { host } from '../components/index.js';
+import { Config } from '../components/index.js';
+const api_address = Config.getConfig().api_address;
 
 export class GetToken extends plugin {
     constructor() {
@@ -24,9 +25,17 @@ export class GetToken extends plugin {
                 {
                     reg: '^#?删除账号$',
                     fnc: 'deleteAccount'
+                },
+                {
+                    reg: '^#?测试$',
+                    fnc: 'test'
                 }
             ]
         });
+    }
+
+    async test(e) {
+        console.log(api_address);
     }
 
     async setAccount(e) {
@@ -51,7 +60,7 @@ export class GetToken extends plugin {
             token: ''
         };
 
-        const response = await fetch(`${host}/login`, {
+        const response = await fetch(`${api_address}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -119,7 +128,7 @@ export class GetToken extends plugin {
 
         const { username, password } = userList[userId];
 
-        const response = await fetch(`${host}/login`, {
+        const response = await fetch(`${api_address}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
