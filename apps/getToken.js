@@ -70,6 +70,11 @@ export class GetToken extends plugin {
         }
 
         userList[userId].token = result.data.token;
+        const encodedUsername = Buffer.from(username).toString('base64');
+        const encodedPassword = Buffer.from(password).toString('base64');
+
+        userList[userId].username = encodedUsername;
+        userList[userId].password = encodedPassword;
         fs.writeFileSync(path, JSON.stringify(userList, null, 2), 'utf8');
         return this.reply('登录成功');
     }
@@ -118,7 +123,9 @@ export class GetToken extends plugin {
             return this.reply('请先设置账号和密码');
         }
 
-        const { username, password } = userList[userId];
+        let { username, password } = userList[userId];
+        username = Buffer.from(username, 'base64').toString('utf8');
+        password = Buffer.from(password, 'base64').toString('utf8');
 
         const response = await fetch(`${api_address}/login`, {
             method: 'POST',
