@@ -75,7 +75,8 @@ export class Query extends plugin {
             }
 
             // 构建课表消息
-            let msg = `【${e.member?.nickname || userId} 的课表】\n`;
+            let msg = `【${e.nickname || userId}的课表】\n`;
+            console.log(e.nickname);
             msg += `━━━━━━━━━━━━━━\n`;
 
             for (const [day, dayCourses] of Object.entries(groupedCourses)) {
@@ -91,7 +92,9 @@ export class Query extends plugin {
                 }
             }
 
-            await e.reply(msg.trim());
+            let replyMsg = [{ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin }];
+            let forwardMsg = Bot.makeForwardMsg(replyMsg);
+            await e.reply(forwardMsg);
         } catch {
             logger.error('Error fetching or parsing schedule:', error);
             await e.reply('获取课表时发生错误，请稍后再试。', true);
@@ -144,7 +147,7 @@ export class Query extends plugin {
             }
 
             // 格式化考试信息，去除已经结束的考试，但保留待定的考试
-            let msg = '【考试安排】\n';
+            let msg = `【${e.nickname || userId}的考试安排】\n`;
             msg += '━━━━━━━━━━━━━━\n';
             const now = new Date();
             exams.forEach((exam) => {
@@ -167,7 +170,9 @@ export class Query extends plugin {
                 }
             });
 
-            await e.reply(msg.trim());
+            let replyMsg = [{ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin }];
+            let forwardMsg = Bot.makeForwardMsg(replyMsg);
+            await e.reply(forwardMsg);
         } catch (error) {
             console.error('Error fetching or parsing schedule:', error);
             await e.reply('获取考试信息时发生错误，请稍后再试。', true);
