@@ -18,6 +18,10 @@ export class Query extends plugin {
                 {
                     reg: '^#?考试查询$',
                     fnc: 'getExam'
+                },
+                {
+                    reg: '^#?成绩查询$',
+                    fnc: 'getScore'
                 }
             ]
         });
@@ -174,8 +178,98 @@ export class Query extends plugin {
             let forwardMsg = Bot.makeForwardMsg(replyMsg);
             await e.reply(forwardMsg);
         } catch (error) {
-            console.error('Error fetching or parsing schedule:', error);
+            logger.error('Error fetching or parsing schedule:', error);
             await e.reply('获取考试信息时发生错误，请稍后再试。', true);
+        }
+    }
+
+    async getScore(e) {
+        const userId = e.user_id;
+        let userList = {};
+        if (!fs.existsSync(tokenPath)) {
+            fs.mkdirSync('./data/xtu-gong', { recursive: true });
+            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
+        }
+        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        if (!userList[userId]) {
+            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
+        }
+        const { token } = userList[userId];
+        if (!token) {
+            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
+        }
+
+        try {
+            const response = await fetch(`${api_address}/scores`, {
+                method: 'GET',
+                headers: {
+                    token: `${token}`
+                }
+            });
+
+            if (!response.ok) {
+                await e.reply(`获取成绩失败：${response.status} ${response.statusText}`, true);
+                return;
+            }
+
+            const result = await response.json();
+
+            // 检查数据是否正常
+            if (result.code !== 1 || !result.data) {
+                await e.reply('成绩数据异常，请稍后重试。', true);
+                return;
+            }
+
+            const scores = result.data.scores;
+            // 按学期分组
+            const terms = [
+                '大一上', '大一下', '大二上', '大二下',
+                '大三上', '大三下', '大四上', '大四下'
+            ];
+
+            const groupedScores = {};
+            for (const term of terms) {
+                groupedScores[term] = { 必修: [], 选修: [] };
+            }
+
+            scores.forEach(score => {
+                const term = terms[score.term - 1];
+                const type = score.type === '必修' ? '必修' : '选修';
+                groupedScores[term][type].push(score);
+            });
+
+            // 构建成绩消息
+            // let msg = `【${e.nickname || userId}的成绩单】\n`;
+            // msg += '━━━━━━━━━━━━━━\n';
+
+            const reversedTerms = terms.slice().reverse();
+            let replyMsg = [];
+            replyMsg.push({ message: `【${e.nickname || userId}的成绩单】`, nickname: Bot.nickname, user_id: Bot.uin });
+            for (const term of reversedTerms) {
+                let msg = '';
+                const termScores = groupedScores[term];
+                if (termScores.必修.length === 0 && termScores.选修.length === 0) continue;
+
+                msg += `【${term}】\n`;
+                for (const [type, scores] of Object.entries(termScores)) {
+                    if (scores.length === 0) continue;
+
+                    msg += ` 【${type}】\n`;
+                    scores.forEach(score => {
+                        msg += `  - ${score.name}\n`;
+                        msg += `    成绩: ${score.score}\n`;
+                        msg += `    学分: ${score.credit}\n\n`;
+                    });
+                }
+                replyMsg.push({ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin });
+            }
+
+            let forwardMsg = Bot.makeForwardMsg(replyMsg);
+            await e.reply(forwardMsg);
+
+        } catch (error) {
+            logger.error('Error fetching or parsing schedule:', error);
+            await e.reply('获取成绩信息时发生错误，请稍后再试。', true);
         }
     }
 }
