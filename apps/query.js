@@ -174,7 +174,7 @@ export class Query extends plugin {
                         msg += `  时间: ${startTime.toLocaleString('zh-CN', { hour12: false })} ~ ${endTime.toLocaleString('zh-CN', { hour12: false })}\n`;
                         msg += `  地点: ${exam.location}\n`;
                         msg += `  类型: ${exam.type}\n`;
-                        const timeDiff = startTime - now;
+                        const timeDiff = startTime.setHours(0, 0, 0, 0) - now.setHours(0, 0, 0, 0);
                         const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
                         msg += `  倒计时: ${daysLeft} 天\n`;
                         msg += '\n';
