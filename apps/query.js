@@ -79,14 +79,24 @@ export class Query extends plugin {
             }
 
             // 构建课表消息
-            let msg = `【${e.nickname || userId}的课表】\n`;
-            console.log(e.nickname);
-            msg += `━━━━━━━━━━━━━━\n`;
+            let replyMsg = [];
+            replyMsg.push({ message: `【${e.nickname || userId}的课表】`, nickname: Bot.nickname, user_id: Bot.uin });
+
+            const dayNames = {
+                'Monday': '星期一',
+                'Tuesday': '星期二',
+                'Wednesday': '星期三',
+                'Thursday': '星期四',
+                'Friday': '星期五',
+                'Saturday': '星期六',
+                'Sunday': '星期日'
+            };
 
             for (const [day, dayCourses] of Object.entries(groupedCourses)) {
+                let msg = '';
                 if (dayCourses.length === 0) continue;
 
-                msg += `【${day}】\n`;
+                msg += `【${dayNames[day]}】\n`;
                 for (const course of dayCourses) {
                     msg += `- ${course.name}\n`;
                     msg += `  教师: ${course.teacher}\n`;
@@ -94,9 +104,9 @@ export class Query extends plugin {
                     msg += `  周次: ${course.weeks}\n`;
                     msg += `  时间: 第 ${course.start_time}-${course.start_time + course.duration - 1} 节课\n\n`;
                 }
+                replyMsg.push({ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin });
             }
 
-            let replyMsg = [{ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin }];
             let forwardMsg = Bot.makeForwardMsg(replyMsg);
             await e.reply(forwardMsg);
         } catch {
@@ -151,8 +161,9 @@ export class Query extends plugin {
             }
 
             // 格式化考试信息，去除已经结束的考试，但保留待定的考试
-            let msg = `【${e.nickname || userId}的考试安排】\n`;
-            msg += '━━━━━━━━━━━━━━\n';
+            let replyMsg = [];
+            replyMsg.push({ message: `【${e.nickname || userId}的考试安排】`, nickname: Bot.nickname, user_id: Bot.uin });
+            let msg = '';
             const now = new Date();
             exams.forEach((exam) => {
                 if (exam.start_time && exam.end_time && exam.location) {
@@ -174,7 +185,7 @@ export class Query extends plugin {
                 }
             });
 
-            let replyMsg = [{ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin }];
+            replyMsg.push({ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin });
             let forwardMsg = Bot.makeForwardMsg(replyMsg);
             await e.reply(forwardMsg);
         } catch (error) {
