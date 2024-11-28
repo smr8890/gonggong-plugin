@@ -22,6 +22,10 @@ export class Query extends plugin {
                 {
                     reg: '^#?成绩查询$',
                     fnc: 'getScore'
+                },
+                {
+                    reg: '^#?我是谁$',
+                    fnc: 'getInfo'
                 }
             ]
         });
@@ -305,6 +309,60 @@ export class Query extends plugin {
         } catch (error) {
             logger.error('Error fetching or parsing schedule:', error);
             await e.reply('获取成绩信息时发生错误，请稍后再试。', true);
+        }
+    }
+
+    async getInfo(e) {
+        const userId = e.user_id;
+        let userList = {};
+        if (!fs.existsSync(tokenPath)) {
+            fs.mkdirSync('./data/xtu-gong', { recursive: true });
+            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
+        }
+        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        if (!userList[userId]) {
+            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
+        }
+        const { token } = userList[userId];
+        if (!token) {
+            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
+        }
+
+        try {
+            // 请求服务器获取个人信息
+            const response = await fetch(`${api_address}/info`, {
+                method: 'GET',
+                headers: {
+                    token: `${token}`
+                }
+            });
+
+            if (!response.ok) {
+                await e.reply(`获取个人信息失败：${response.status} ${response.statusText}`, true);
+                return;
+            }
+
+            const result = await response.json();
+
+            // 检查数据是否正常
+            if (result.code !== 1 || !result.data) {
+                await e.reply('个人信息异常，请稍后重试。', true);
+                return;
+            }
+
+            const info = result.data;
+
+            // 构建个人信息消息
+            let msg = '';
+            msg += `姓名：${info.name}\n`;
+            msg += `性别：${info.gender}\n`;
+            msg += `班级：${info.class_}\n`;
+            msg += `生日：${info.birthday}\n`;
+
+            await e.reply(msg.trim());
+        } catch (error) {
+            logger.error('Error fetching or parsing schedule:', error);
+            await e.reply('获取个人信息时发生错误，请稍后再试。', true);
         }
     }
 }
