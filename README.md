@@ -20,6 +20,8 @@ git clone --depth=1 https://github.com/smr8890/xtu-gong-plugin.git ./plugins/xtu
 git clone --depth=1 https://gitee.com/smr8890/xtu-gong-plugin.git ./plugins/xtu-gong-plugin
 ```
 
+安装完成后重启云崽即可使用
+
 ## 插件配置
 
 插件查询所使用到的api接口来自[sky31studio/GongGong](https://github.com/sky31studio/GongGong)
