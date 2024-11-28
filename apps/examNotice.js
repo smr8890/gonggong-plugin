@@ -132,6 +132,7 @@ export class ExamNotice extends plugin {
                                     Bot.pickUser(userId).sendMsg(msg.trim());
                                 }
                             });
+                            //考试当天默认提醒
                             if (daysUntilExam === 0) {
                                 let msg = '您今天有考试！\n';
                                 msg += `科目: ${exam.name}\n`;

@@ -1,6 +1,6 @@
 #api接口地址
 api_address: http://127.0.0.1:8000
 #考试提醒时间，cron表达式
-exam_time: 0 0 8 * * ?
+exam_time: 0 0 7 * * ?
 #提前提醒的天数，一个数组
 advance_days: [1, 3, 5]
