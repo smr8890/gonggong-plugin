@@ -1,15 +1,17 @@
-import YAML from 'yaml'
-import fs from 'node:fs'
-import chokidar from 'chokidar'
-// import YamlReader from './YamlReader.js'
+import YAML from "yaml"
+import chokidar from "chokidar"
+import fs from "node:fs"
+import YamlReader from "./YamlReader.js"
+import cfg from "../../../lib/config/config.js"
 
-const path = process.cwd()
-const pluginName = 'xtu-gong-plugin';
-const pluginPath = `${path}/plugins/${pluginName}`;
+const Path = process.cwd()
+const Plugin_Name = "xtu-gong-Plugin"
+const Plugin_Path = `${Path}/plugins/${Plugin_Name}`
 
 class Config {
     constructor() {
         this.config = {}
+
         /** 监听文件 */
         this.watcher = { config: {}, defSet: {} }
 
@@ -18,64 +20,78 @@ class Config {
 
     /** 初始化配置 */
     initCfg() {
-        const pathCfg = `${pluginPath}/config/config/`
-        if (!fs.existsSync(pathCfg)) fs.mkdirSync(pathCfg)
-        const pathDef = `${pluginPath}/config/default/`
-        const file = 'config.yaml'
-        const ignore = []
+        const path = `${Plugin_Path}/config/config/`
+        const pathDef = `${Plugin_Path}/config/default_config/`
+        const files = fs.readdirSync(pathDef).filter(file => file.endsWith(".yaml"))
 
-        if (!fs.existsSync(`${pathCfg}${file}`)) {
-            fs.copyFileSync(`${pathDef}${file}`, `${pathCfg}${file}`)
-        } else {
-            const config = YAML.parse(fs.readFileSync(`${pathCfg}${file}`, 'utf8'))
-            const defaultConfig = YAML.parse(fs.readFileSync(`${pathDef}${file}`, 'utf8'))
-            let isChange = false
-            const saveKeys = []
-            const merge = (defValue, value, prefix = '') => {
-                const defKeys = Object.keys(defValue)
-                const configKeys = Object.keys(value || {})
-                if (defKeys.length !== configKeys.length) {
-                    isChange = true
-                }
-                for (const key of defKeys) {
-                    switch (typeof defValue[key]) {
-                        case 'object':
-                            if (!Array.isArray(defValue[key]) && !ignore.includes(`${file.replace('.yaml', '')}.${key}`)) {
-                                defValue[key] = merge(defValue[key], value[key], key + '.')
-                                break
-                            }
-                        // eslint-disable-next-line no-fallthrough
-                        default:
-                            if (!configKeys.includes(key)) {
-                                isChange = true
-                            } else {
-                                defValue[key] = value[key]
-                            }
-                            saveKeys.push(`${prefix}${key}`)
-                    }
-                }
-                return defValue
-            }
-            const value = merge(defaultConfig, config)
-            if (isChange) {
-                fs.copyFileSync(`${pathDef}${file}`, `${pathCfg}${file}`)
-                for (const key of saveKeys) {
-                    this.modify(file.replace('.yaml', ''), key, key.split('.').reduce((obj, key) => obj[key], value))
+        for (let file of files) {
+            const userFilePath = `${path}${file}`
+            const defFilePath = `${pathDef}${file}`
+
+            const mergedYaml = new YamlReader(defFilePath)
+            mergedYaml.yamlPath = userFilePath
+
+            if (fs.existsSync(userFilePath)) {
+                const userYaml = new YamlReader(userFilePath)
+
+                for (const [key, value] of Object.entries(userYaml.jsonData)) {
+                    mergedYaml.set(key, value)
                 }
             }
+
+            mergedYaml.save()
+
+            this.watch(userFilePath, file.replace(".yaml", ""), "config")
         }
-        this.watch(`${pathCfg}${file}`, file.replace('.yaml', ''), 'config')
-
     }
 
-    /** 默认配置 */
-    getdefSet() {
-        return this.getYaml('default', 'config')
+    /** 配置 */
+    get getcfg() {
+        return this.getDefOrConfig("config")
     }
 
-    /** 用户配置 */
-    getConfig() {
-        return this.getYaml('config', 'config')
+    /**
+     * 群配置
+     * @param group_id
+     * @param bot_id
+     */
+    getGroup(group_id = "", bot_id = "") {
+        const config = {
+            ...cfg.getdefSet("group"),
+            ...cfg.getConfig("group")
+        }
+        return {
+            ...config.default,
+            ...config[`${bot_id}:default`],
+            ...config[group_id],
+            ...config[`${bot_id}:${group_id}`]
+        }
+    }
+
+    /**
+     * 默认配置和用户配置
+     * @param name
+     */
+    getDefOrConfig(name) {
+        let def = this.getdefSet(name)
+        let config = this.getConfig(name)
+        return { ...def, ...config }
+    }
+
+    /**
+     * 默认配置
+     * @param name
+     */
+    getdefSet(name) {
+        return this.getYaml("default_config", name)
+    }
+
+    /**
+     * 用户配置
+     * @param name
+     */
+    getConfig(name) {
+        return this.getYaml("config", name)
     }
 
     /**
@@ -84,13 +100,13 @@ class Config {
      * @param name 名称
      */
     getYaml(type, name) {
-        const file = `${pluginPath}/config/${type}/${name}.yaml`
-        const key = `${type}.${name}`
+        let file = `${Plugin_Path}/config/${type}/${name}.yaml`
+        let key = `${type}.${name}`
 
         if (this.config[key]) return this.config[key]
 
         this.config[key] = YAML.parse(
-            fs.readFileSync(file, 'utf8')
+            fs.readFileSync(file, "utf8")
         )
 
         this.watch(file, name, type)
@@ -98,40 +114,63 @@ class Config {
         return this.config[key]
     }
 
-    /** 获取所有配置 */
-    getCfg() {
-        return {
-            ...this.files.map(file => this.getDefOrConfig(file.replace('.yaml', ''))).reduce((obj, item) => {
-                return { ...obj, ...item }
-            }, {})
-        }
-    }
+    /**
+     * 监听配置文件
+     * @param file
+     * @param name
+     * @param type
+     */
+    watch(file, name, type = "default_config") {
+        let key = `${type}.${name}`
 
-    /** 监听配置文件 */
-    watch(file, name, type = 'default') {
-        const key = `${type}.${name}`
         if (this.watcher[key]) return
 
         const watcher = chokidar.watch(file)
-        watcher.on('change', async pathCfg => {
+        watcher.on("change", path => {
             delete this.config[key]
-            logger.info(`[${pluginName}][修改配置文件][${type}][${name}]`)
+            if (typeof Bot == "undefined") return
+            logger.mark(`[xtu-gong-Plugin][修改配置文件][${type}][${name}]`)
+            if (this[`change_${name}`]) {
+                this[`change_${name}`]()
+            }
         })
 
         this.watcher[key] = watcher
     }
 
-    // /**
-    //  * 修改设置
-    //  * @param {String} name 文件名
-    //  * @param {String} key 修改的key值
-    //  * @param {String|Number} value 修改的value值
-    //  * @param {'config'|'default'} type 配置文件或默认
-    //  */
-    // modify(name, key, value, type = 'config') {
-    //     const pathCfg = `${Version.pluginPath}/config/${type}/${name}.yaml`
-    //     new YamlReader(pathCfg).set(key, value)
-    //     delete this.config[`${type}.${name}`]
-    // }
+    /**
+     * 修改设置
+     * @param {string} name 文件名
+     * @param {string} key 修改的key值
+     * @param {string | number} value 修改的value值
+     * @param {'config'|'default_config'} type 配置文件或默认
+     * @param {boolean} bot 是否修改Bot的配置
+     */
+    modify(name, key, value, type = "config", bot = false) {
+        let path = `${bot ? Path : Plugin_Path}/config/${type}/${name}.yaml`
+        new YamlReader(path).set(key, value)
+        delete this.config[`${type}.${name}`]
+    }
+
+    /**
+     * 修改配置数组
+     * @param {string} name 文件名
+     * @param {string | number} key key值
+     * @param {string | number} value value
+     * @param {'add'|'del'} category 类别 add or del
+     * @param {'config'|'default_config'} type 配置文件或默认
+     * @param {boolean} bot  是否修改Bot的配置
+     */
+    modifyarr(name, key, value, category = "add", type = "config", bot = false) {
+        let path = `${bot ? Path : Plugin_Path}/config/${type}/${name}.yaml`
+        let yaml = new YamlReader(path)
+        if (category == "add") {
+            yaml.addIn(key, value)
+        } else {
+            let index = yaml.jsonData[key].indexOf(value)
+            yaml.delete(`${key}.${index}`)
+        }
+    }
 }
+
 export default new Config()

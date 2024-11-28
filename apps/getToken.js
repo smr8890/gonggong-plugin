@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { Config } from '../components/index.js';
-const api_address = Config.getConfig().api_address;
+const api_address = Config.getcfg.api_address;
 
 export class GetToken extends plugin {
     constructor() {

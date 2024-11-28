@@ -1,10 +1,10 @@
 import fs from 'fs';
 import { Config } from '../components/index.js';
 const tokenPath = './data/xtu-gong/userlist.json';
-const api_address = Config.getConfig().api_address;
-const exam_time = Config.getConfig().exam_time;
+const api_address = Config.getcfg.api_address;
+const exam_time = Config.getcfg.exam_time;
 const examDir = './data/xtu-gong/exams';
-const advance_days = Config.getConfig().advance_days;
+const advance_days = Config.getcfg.advance_days;
 
 export class ExamNotice extends plugin {
     constructor() {
