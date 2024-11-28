@@ -49,7 +49,8 @@ export class GetToken extends plugin {
         userList[userId] = {
             username: username,
             password: password,
-            token: ''
+            token: '',
+            examNotice: false
         };
 
         const response = await fetch(`${api_address}/login`, {
@@ -99,7 +100,8 @@ export class GetToken extends plugin {
             userList[userId] = {
                 username: '',
                 password: '',
-                token: token
+                token: token,
+                examNotice: false
             };
         } else {
             userList[userId].token = token;
