@@ -5,7 +5,7 @@ import YamlReader from "./YamlReader.js"
 import cfg from "../../../lib/config/config.js"
 
 const Path = process.cwd()
-const Plugin_Name = "xtu-gong-Plugin"
+const Plugin_Name = "xtu-gong-plugin"
 const Plugin_Path = `${Path}/plugins/${Plugin_Name}`
 
 class Config {
