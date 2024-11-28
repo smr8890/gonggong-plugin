@@ -211,27 +211,45 @@ export class Query extends plugin {
         }
 
         try {
-            const response = await fetch(`${api_address}/scores`, {
+            // 请求服务器获取成绩数据
+            const response1 = await fetch(`${api_address}/scores`, {
                 method: 'GET',
                 headers: {
                     token: `${token}`
                 }
             });
-
-            if (!response.ok) {
-                await e.reply(`获取成绩失败：${response.status} ${response.statusText}`, true);
+            if (!response1.ok) {
+                await e.reply(`获取成绩失败：${response1.status} ${response1.statusText}`, true);
                 return;
             }
 
-            const result = await response.json();
+            // 请求服务器获取排名数据
+            const response2 = await fetch(`${api_address}/rank`, {
+                method: 'GET',
+                headers: {
+                    token: `${token}`
+                }
+            });
+            if (!response2.ok) {
+                await e.reply(`获取排名失败：${response2.status} ${response2.statusText}`, true);
+                return;
+            }
+
+            const result1 = await response1.json();
+            const result2 = await response2.json();
 
             // 检查数据是否正常
-            if (result.code !== 1 || !result.data) {
+            if (result1.code !== 1 || !result1.data) {
                 await e.reply('成绩数据异常，请稍后重试。', true);
                 return;
             }
+            if (result2.code !== 1 || !result2.data) {
+                await e.reply('排名数据异常，请稍后重试。', true);
+                return;
+            }
 
-            const scores = result.data.scores;
+            const scores = result1.data.scores;
+            const rank = result2.data;
             // 按学期分组
             const terms = [
                 '大一上', '大一下', '大二上', '大二下',
@@ -256,6 +274,12 @@ export class Query extends plugin {
             const reversedTerms = terms.slice().reverse();
             let replyMsg = [];
             replyMsg.push({ message: `【${e.nickname || userId}的成绩单】`, nickname: Bot.nickname, user_id: Bot.uin });
+            let msg = '';
+            msg += `平均成绩：${rank.average_score}\n`;
+            msg += `平均绩点：${rank.gpa}\n`;
+            msg += `班级排名：${rank.class_rank}\n`;
+            msg += `专业排名：${rank.major_rank}`;
+            replyMsg.push({ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin });
             for (const term of reversedTerms) {
                 let msg = '';
                 const termScores = groupedScores[term];
