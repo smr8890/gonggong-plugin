@@ -254,9 +254,55 @@ export class Query extends plugin {
                 return;
             }
 
-            const scores = result1.data.scores;
+            let scores = result1.data.scores;
             const rank = result2.data;
+            // 对 scores 进行预处理，按学期和课程类型分组
+            function getTermName(termNumber) {
+                const terms = [
+                    '大一上', '大一下', '大二上', '大二下',
+                    '大三上', '大三下', '大四上', '大四下'
+                ];
+                return terms[termNumber - 1] || '未知学期';
+            }
 
+            const termsMap = {};
+
+            scores.forEach(score => {
+                const termName = getTermName(score.term);
+                if (!termsMap[termName]) {
+                    termsMap[termName] = {};
+                }
+                const type = score.type === '必修' ? '必修' : '选修';
+                if (!termsMap[termName][type]) {
+                    termsMap[termName][type] = [];
+                }
+                termsMap[termName][type].push({
+                    name: score.name,
+                    score: score.score,
+                    credit: score.credit
+                });
+            });
+
+            const processedScores = Object.keys(termsMap).sort((a, b) => {
+                const termOrder = [
+                    '大一上', '大一下', '大二上', '大二下',
+                    '大三上', '大三下', '大四上', '大四下'
+                ];
+                return termOrder.indexOf(b) - termOrder.indexOf(a);
+            }).map(termName => {
+                const types = Object.keys(termsMap[termName]).map(type => {
+                    return {
+                        type: type,
+                        scores: termsMap[termName][type]
+                    };
+                });
+                return {
+                    term: termName,
+                    data: types
+                };
+            });
+
+            scores = processedScores;
             const base64 = await puppeteer.screenshot('xtu-gong-plugin', {
                 saveId: 'score',
                 imgType: 'png',
