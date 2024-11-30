@@ -22,27 +22,36 @@
         }
 
         .summary {
-            background-color: #FFC0CB;
+            background-color: #ffffff;
             /* Light Pink */
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 20px;
+            height: 50px;
+            color: #E46C7E;
         }
 
-        table {
-            width: 100%;
+        .score-table {
+            width: 80%;
+            margin: 0 auto;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
-        th,
-        td {
+        .score-table th,
+        .score-table td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            word-wrap: break-word;
         }
 
-        th {
+        .score-table th {
             background-color: #f2f2f2;
+        }
+
+        .score-table colgroup col {
+            width: 33.33%;
         }
     </style>
 </head>
@@ -50,6 +59,15 @@
 <body>
 
     <div id="app">
+        <div style="
+        background-color: #FF6476;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        height: 100px;">
+        </div>
+
+
         <div class="summary">
             <div class="container">
                 <div>
@@ -71,10 +89,19 @@
             </div>
         </div>
 
+        <br>
+
         {{each scores term}}
         <div>
-            <h2>{{term.term}}</h2>
-            <table>
+            <div style="width: 80%; margin: 0 auto;">
+                <h2>{{term.term}}</h2>
+            </div>
+            <table class="score-table">
+                <colgroup>
+                    <col>
+                    <col>
+                    <col>
+                </colgroup>
                 <thead>
                     <tr>
                         <th>课程名称</th>
@@ -85,7 +112,7 @@
                 <tbody>
                     {{each term.data data}}
                     <tr>
-                        <td colspan="3" style="background-color: #f2f2f2; text-align: left;">{{data.type}}</td>
+                        <td colspan="3" style="background-color: #d5e5e4; text-align: left;">{{data.type}}</td>
                     </tr>
                     {{each data.scores score}}
                     <tr>
@@ -97,8 +124,9 @@
                     {{/each}}
                 </tbody>
             </table>
-            {{/each}}
         </div>
+        {{/each}}
+    </div>
 
 </body>
 
