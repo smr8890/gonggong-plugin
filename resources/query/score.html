@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩单</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .container>div {
+            text-align: center;
+        }
+
+        .summary {
+            background-color: #FFC0CB;
+            /* Light Pink */
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <div class="summary">
+            <div class="container">
+                <div>
+                    <h3>{{ rank.gpa }}</h3>
+                    <p>平均绩点</p>
+                </div>
+                <div>
+                    <h3>{{ rank.class_rank }}</h3>
+                    <p>班级排名</p>
+                </div>
+                <div>
+                    <h3>{{ rank.major_rank }}</h3>
+                    <p>年级排名</p>
+                </div>
+                <div>
+                    <h3>{{ rank.average_score }}</h3>
+                    <p>平均成绩</p>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2>成绩列表</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>课程名称</th>
+                        <th>学分</th>
+                        <th>成绩</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{each scores score}}
+                    <tr>
+                        <td colspan="3" style="background-color: #f2f2f2; text-align: left;">{{score.type}}</td>
+                    </tr>
+                    <tr>
+                        <td>{{score.name}}</td>
+                        <td>{{score.credit}}</td>
+                        <td>{{score.score}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+
+<!-- <script>
+    const rank = {
+        "average_score": "78.44",
+        "gpa": "2.62",
+        "class_rank": 17,
+        "major_rank": 83,
+        "terms": ["*"]
+    };
+
+    const scores = [
+        {
+            "name": "大学生职业生涯规划",
+            "score": "95",
+            "credit": "1",
+            "type": "必修",
+            "term": 1
+        },
+        {
+            "name": "程序设计实践",
+            "score": "及格",
+            "credit": "2",
+            "type": "必修",
+            "term": 5
+        },
+        {
+            "name": "软件工程与安全",
+            "score": "81",
+            "credit": "2",
+            "type": "选修",
+            "term": 5
+        }
+    ];
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelector(".summary .container").innerHTML = `
+            <div>
+                <h3>${rank.gpa}</h3>
+                <p>平均绩点</p>
+            </div>
+            <div>
+                <h3>${rank.class_rank}</h3>
+                <p>班级排名</p>
+            </div>
+            <div>
+                <h3>${rank.major_rank}</h3>
+                <p>年级排名</p>
+            </div>
+            <div>
+                <h3>${rank.average_score}</h3>
+                <p>平均成绩</p>
+            </div>
+        `;
+
+        const terms = {};
+        scores.forEach(score => {
+            const termNumber = Math.ceil(score.term / 2);
+            const chineseNumbers = ['一', '二', '三', '四'];
+            const termName = `大${chineseNumbers[termNumber - 1]}${score.term % 2 === 1 ? '上' : '下'}`;
+            if (!terms[termName]) {
+                terms[termName] = [];
+            }
+            terms[termName].push(score);
+        });
+
+        for (const term in terms) {
+            const termContainer = document.createElement("div");
+            termContainer.innerHTML = `<h2>${term}</h2>`;
+            const table = document.createElement("table");
+            table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>课程名称</th>
+                    <th>学分</th>
+                    <th>成绩</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${terms[term].map(score => `
+                <tr>
+                    <td colspan="3" style="background-color: #f2f2f2; text-align: left;">${score.type}</td>
+                </tr>
+                <tr>
+                    <td>${score.name}</td>
+                    <td>${score.credit}</td>
+                    <td>${score.score}</td>
+                </tr>
+                `).join('')}
+            </tbody>
+            `;
+            termContainer.appendChild(table);
+            document.body.appendChild(termContainer);
+        }
+    });
+</script> -->
+
+</html>
