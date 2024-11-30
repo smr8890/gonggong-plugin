@@ -290,7 +290,7 @@ export class Query extends plugin {
                 ];
                 return termOrder.indexOf(b) - termOrder.indexOf(a);
             }).map(termName => {
-                const types = Object.keys(termsMap[termName]).map(type => {
+                const types = ['必修', '选修'].filter(type => termsMap[termName][type]).map(type => {
                     return {
                         type: type,
                         scores: termsMap[termName][type]
