@@ -11,49 +11,105 @@
             font-family: sans-serif;
         }
 
+        .top {
+            background-color: #FF6476;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            height: 100px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+
+        .summary {
+            /* 背景颜色设置为白色 */
+            background-color: #ffffff;
+            /* 内边距设置为20px */
+            padding: 20px;
+            /* 宽度设置为80% */
+            width: 80%;
+            /* 上下左右的外边距设置为自动，以实现居中 */
+            margin: 0 auto;
+            /* 添加阴影效果 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* 边框圆角半径为30px */
+            border-radius: 25px;
+            margin-top: -60px;
+            line-height: 0.3;
+        }
+
+        .score-summary {
+            background-color: #ffffff;
+            padding: 20px;
+            width: 80%;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+        }
+
         .container {
             display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-bottom: 20px;
+            justify-content: space-between;
         }
 
         .container>div {
             text-align: center;
         }
 
-        .summary {
-            background-color: #ffffff;
-            /* Light Pink */
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            height: 90px;
-            color: #E46C7E;
+        .container>div>h3 {
+            color: #FF6476;
+            font-size: 23px;
+        }
+
+        .container>div>p {
+            font-size: 12px;
         }
 
         .score-table {
+            /* 设置背景颜色 */
             background-color: #ffffff;
-            width: 80%;
+            /* 设置表格宽度为100% */
+            width: 100%;
+            /* 将表格居中 */
             margin: 0 auto;
+            /* 合并表格边框 */
             border-collapse: collapse;
+            /* 固定表格布局 */
             table-layout: fixed;
         }
 
-        .score-table th,
+        .score-table th {
+            /* 左对齐文本 */
+            text-align: left;
+            color: #A4A3A3;
+        }
+
         .score-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            /* 设置内边距 */
+            padding: 5px;
             text-align: left;
             word-wrap: break-word;
         }
 
-        .score-table th {
-            background-color: #ffffff;
+        .score-table th:nth-child(1),
+        .score-table td:nth-child(1) {
+            text-align: left;
+            width: 70%;
         }
 
-        .score-table colgroup col {
-            width: 33.33%;
+        .score-table th:nth-child(2),
+        .score-table td:nth-child(2) {
+            text-align: center;
+        }
+
+        .score-table th:nth-child(3),
+        .score-table td:nth-child(3) {
+            text-align: right;
+        }
+
+        .statement {
+            text-align: center;
         }
     </style>
 </head>
@@ -61,14 +117,7 @@
 <body>
 
     <div id="app">
-        <div style="
-        background-color: #FF6476;
-        padding: 10px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        height: 100px;">
-        </div>
-
+        <div class="top"></div>
 
         <div class="summary">
             <div class="container">
@@ -91,19 +140,13 @@
             </div>
         </div>
 
-        <br>
-
         {{each scores term}}
-        <div>
-            <div style="width: 80%; margin: 0 auto;">
+        <br>
+        <div class="score-summary">
+            <div>
                 <h2>{{term.term}}</h2>
             </div>
             <table class="score-table">
-                <colgroup>
-                    <col>
-                    <col>
-                    <col>
-                </colgroup>
                 <thead>
                     <tr>
                         <th>课程名称</th>
@@ -111,11 +154,13 @@
                         <th>成绩</th>
                     </tr>
                 </thead>
+            </table>
+            {{each term.data data}}
+            <div>
+                <h3>{{data.type}}</h3>
+            </div>
+            <table class="score-table">
                 <tbody>
-                    {{each term.data data}}
-                    <tr>
-                        <td colspan="3" style="background-color: #d5e5e4; text-align: left;">{{data.type}}</td>
-                    </tr>
                     {{each data.scores score}}
                     <tr>
                         <td>{{score.name}}</td>
@@ -123,14 +168,16 @@
                         <td>{{score.score}}</td>
                     </tr>
                     {{/each}}
-                    {{/each}}
                 </tbody>
             </table>
+            {{/each}}
         </div>
         {{/each}}
     </div>
 
-    <div style="text-align: center; margin-top: 20px;">
+    <br>
+
+    <div class="statement">
         Created By Yunzai-Bot & xtu-gong-plugin
     </div>
 </body>

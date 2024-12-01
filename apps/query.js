@@ -311,58 +311,6 @@ export class Query extends plugin {
                 rank: rank,
             });
             return this.reply(base64);
-            // // 按学期分组
-            // const terms = [
-            //     '大一上', '大一下', '大二上', '大二下',
-            //     '大三上', '大三下', '大四上', '大四下'
-            // ];
-
-            // const groupedScores = {};
-            // for (const term of terms) {
-            //     groupedScores[term] = { 必修: [], 选修: [] };
-            // }
-
-            // scores.forEach(score => {
-            //     const term = terms[score.term - 1];
-            //     const type = score.type === '必修' ? '必修' : '选修';
-            //     groupedScores[term][type].push(score);
-            // });
-
-            // // 构建成绩消息
-            // // let msg = `【${e.nickname || userId}的成绩单】\n`;
-            // // msg += '━━━━━━━━━━━━━━\n';
-
-            // const reversedTerms = terms.slice().reverse();
-            // let replyMsg = [];
-            // replyMsg.push({ message: `【${e.nickname || userId}的成绩单】`, nickname: Bot.nickname, user_id: Bot.uin });
-            // let msg = '';
-            // msg += `平均成绩：${rank.average_score}\n`;
-            // msg += `平均绩点：${rank.gpa}\n`;
-            // msg += `班级排名：${rank.class_rank}\n`;
-            // msg += `专业排名：${rank.major_rank}`;
-            // replyMsg.push({ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin });
-            // for (const term of reversedTerms) {
-            //     let msg = '';
-            //     const termScores = groupedScores[term];
-            //     if (termScores.必修.length === 0 && termScores.选修.length === 0) continue;
-
-            //     msg += `【${term}】\n`;
-            //     for (const [type, scores] of Object.entries(termScores)) {
-            //         if (scores.length === 0) continue;
-
-            //         msg += ` 【${type}】\n`;
-            //         scores.forEach(score => {
-            //             msg += `  - ${score.name}\n`;
-            //             msg += `    成绩: ${score.score}\n`;
-            //             msg += `    学分: ${score.credit}\n\n`;
-            //         });
-            //     }
-            //     replyMsg.push({ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin });
-            // }
-
-            // let forwardMsg = Bot.makeForwardMsg(replyMsg);
-            // await e.reply(forwardMsg);
-
         } catch (error) {
             logger.error('Error fetching or parsing schedule:', error);
             await e.reply('获取成绩信息时发生错误，请稍后再试。', true);
