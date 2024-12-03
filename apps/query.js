@@ -159,41 +159,62 @@ export class Query extends plugin {
                 return;
             }
 
-            const exams = result.data.exams;
+            let exams = result.data.exams;
 
             if (exams.length === 0) {
                 await e.reply('目前没有已知的考试安排。', true);
                 return;
             }
 
-            // 格式化考试信息，去除已经结束的考试，但保留待定的考试
-            let replyMsg = [];
-            replyMsg.push({ message: `【${e.nickname || userId}的考试安排】`, nickname: Bot.nickname, user_id: Bot.uin });
-            let msg = '';
-            const now = new Date();
-            exams.forEach((exam) => {
-                if (exam.start_time && exam.end_time && exam.location) {
+            // 对 exams 进行预处理，增加 time 和 countdown 字段
+            // 移除已结束的考试，但保留没有时间和地点信息的考试
+            exams = exams.filter(exam => {
+                if (!exam.start_time || !exam.end_time || !exam.location) return true;
+                const endTime = new Date(exam.end_time);
+                const now = new Date();
+                return endTime >= now;
+            }).map(exam => {
+                if (!exam.type) {
+                    exam.type = '考查';
+                }
+
+                if (!exam.start_time || !exam.end_time) {
+                    exam.time = '无时间';
+                } else {
                     const startTime = new Date(exam.start_time);
                     const endTime = new Date(exam.end_time);
-                    if (endTime > now) {
-                        msg += `- ${exam.name}\n`;
-                        msg += `  时间: ${startTime.toLocaleString('zh-CN', { hour12: false })} ~ ${endTime.toLocaleString('zh-CN', { hour12: false })}\n`;
-                        msg += `  地点: ${exam.location}\n`;
-                        msg += `  类型: ${exam.type}\n`;
-                        const timeDiff = startTime.setHours(0, 0, 0, 0) - now.setHours(0, 0, 0, 0);
-                        const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-                        msg += `  倒计时: ${daysLeft} 天\n`;
-                        msg += '\n';
-                    }
-                } else {
-                    msg += `- ${exam.name} (待定)\n`;
-                    msg += '\n';
+                    const daysOfWeek = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                    const dayOfWeek = daysOfWeek[startTime.getDay()];
+                    const formatTime = (time) => time.toString().padStart(2, '0');
+                    exam.time = `${startTime.getFullYear()}/${startTime.getMonth() + 1}/${startTime.getDate()} ${formatTime(startTime.getHours())}:${formatTime(startTime.getMinutes())}-${formatTime(endTime.getHours())}:${formatTime(endTime.getMinutes())} ${dayOfWeek}`;
                 }
+
+                if (!exam.location) {
+                    exam.location = '无地点';
+                }
+
+                // 计算倒计时，忽略时分秒
+                if (exam.start_time && exam.end_time) {
+                    const startTime = new Date(exam.start_time);
+                    const nowDate = new Date();
+                    const diff = startTime.setHours(0, 0, 0, 0) - nowDate.setHours(0, 0, 0, 0);
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    exam.countdown = days;
+                } else {
+                    exam.countdown = null;
+                }
+
+                return exam;
             });
 
-            replyMsg.push({ message: msg.trim(), nickname: Bot.nickname, user_id: Bot.uin });
-            let forwardMsg = Bot.makeForwardMsg(replyMsg);
-            await e.reply(forwardMsg);
+            const base64 = await puppeteer.screenshot('xtu-gong-plugin', {
+                saveId: 'exam',
+                imgType: 'png',
+                tplFile: `${Plugin_Path}/resources/query/exam.html`,
+                exams: exams,
+                Plugin_Path: Plugin_Path
+            });
+            return this.reply(base64);
         } catch (error) {
             logger.error('Error fetching or parsing schedule:', error);
             await e.reply('获取考试信息时发生错误，请稍后再试。', true);

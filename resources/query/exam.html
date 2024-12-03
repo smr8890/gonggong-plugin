@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩单</title>
+    <style>
+        html {
+            width: 550px;
+        }
+
+        body {
+            background-color: #F2F2F2;
+            font-family: sans-serif;
+        }
+
+        .top {
+            background-color: #FF6476;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            height: 80px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 20px;
+        }
+
+        .exam-summary {
+            background-color: #ffffff;
+            padding: 20px;
+            width: 80%;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .exam-container {
+            line-height: 2.5;
+        }
+
+        .exam-table {
+            width: 100%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .exam-table td {
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        .name {
+            font-size: 20px;
+        }
+
+        .type {
+            background-color: #FFAA6A;
+            padding: 0px 10px;
+            margin: 0px 13px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 15px 15px 15px 0;
+            font-size: 15px;
+            color: #ffffff;
+            align-self: center;
+            height: 25px;
+            line-height: 1.6;
+        }
+
+        /* 213*107 */
+
+        .countdown {
+            font-size: 17px;
+        }
+
+        .countdown span {
+            vertical-align: middle;
+            font-size: 23px;
+            color: #FF6275;
+        }
+
+        .timeAndPlace {
+            font-size: 13px;
+            color: #A7A7A7;
+
+            img {
+                height: 13px;
+            }
+        }
+
+        .statement {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <div class="top"></div>
+
+        <div class="exam-summary">
+            <table class="exam-table">
+                {{each exams exam}}
+                <tr>
+                    <td>
+                        <div class="exam-container">
+                            <span class="container">
+                                <div class="container">
+                                    <div class="name">
+                                        {{exam.name}}
+                                    </div>
+                                    <div class="type">
+                                        {{exam.type}}
+                                        <!-- <img src="QQ20241203-193536.png" alt=""> -->
+                                    </div>
+                                </div>
+
+                                <div class="countdown">
+                                    {{if exam.countdown}}还剩<span>{{exam.countdown}}</span>天{{/if}}
+                                </div>
+                            </span>
+                            <div class="timeAndPlace">
+                                <img src="{{Plugin_Path}}/resources/img/时钟.png"> {{exam.time}} &nbsp| &nbsp<img
+                                    src="{{Plugin_Path}}/resources/img/定位.png">
+                                {{exam.location}}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {{/each}}
+            </table>
+        </div>
+        <br>
+        <div class="statement">
+            Created By Yunzai-Bot & xtu-gong-plugin
+        </div>
+    </div>
+
+</body>
+
+</html>
