@@ -50,31 +50,19 @@ export class Query extends plugin {
         }
 
         try {
-            // 请求服务器获取课表数据
-            const response = await fetch(`${api_address}/courses`, {
-                method: 'GET',
-                headers: {
-                    token: `${token}`
-                }
-            });
+            const result = await this.getResponse(token, 'courses');
 
-            if (!response.ok) {
-                await e.reply(`获取课表失败：${response.status} ${response.statusText}`, true);
+            if (result.code !== 1) {
+                await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
 
-            const result = await response.json();
-
-            //检查数据是否正常
-            if (result.code !== 1 || !result.data?.courses) {
+            if (!result.data?.courses) {
                 await e.reply('课表数据异常，请稍后重试。', true);
                 return;
             }
 
-            // 解析课程数据
             const courses = result.data.courses;
-
-            // 按照星期分组
             const daysOfWeek = [
                 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
             ];
@@ -84,7 +72,6 @@ export class Query extends plugin {
                 groupedCourses[day] = courses.filter(course => course.day === day);
             }
 
-            // 构建课表消息
             let replyMsg = [];
             replyMsg.push({ message: `【${e.nickname || userId}的课表】`, nickname: Bot.nickname, user_id: Bot.uin });
 
@@ -115,7 +102,7 @@ export class Query extends plugin {
 
             let forwardMsg = Bot.makeForwardMsg(replyMsg);
             await e.reply(forwardMsg);
-        } catch {
+        } catch (error) {
             logger.error('Error fetching or parsing schedule:', error);
             await e.reply('获取课表时发生错误，请稍后再试。', true);
         }
@@ -138,23 +125,14 @@ export class Query extends plugin {
         }
 
         try {
-            // 请求服务器获取考试数据
-            const response = await fetch(`${api_address}/exams`, {
-                method: 'GET',
-                headers: {
-                    token: `${token}`
-                }
-            });
+            const result = await this.getResponse(token, 'exams');
 
-            if (!response.ok) {
-                await e.reply(`获取考试失败：${response.status} ${response.statusText}`, true);
+            if (result.code !== 1) {
+                await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
 
-            const result = await response.json();
-
-            // 检查数据是否正常
-            if (result.code !== 1 || !result.data) {
+            if (!result.data) {
                 await e.reply('考试数据异常，请稍后重试。', true);
                 return;
             }
@@ -166,8 +144,6 @@ export class Query extends plugin {
                 return;
             }
 
-            // 对 exams 进行预处理，增加 time 和 countdown 字段
-            // 移除已结束的考试，但保留没有时间和地点信息的考试
             exams = exams.filter(exam => {
                 if (!exam.start_time || !exam.end_time || !exam.location) return true;
                 const endTime = new Date(exam.end_time);
@@ -193,7 +169,6 @@ export class Query extends plugin {
                     exam.location = '无地点';
                 }
 
-                // 计算倒计时，忽略时分秒
                 if (exam.start_time && exam.end_time) {
                     const startTime = new Date(exam.start_time);
                     const nowDate = new Date();
@@ -238,39 +213,21 @@ export class Query extends plugin {
         }
 
         try {
-            // 请求服务器获取成绩数据
-            const response1 = await fetch(`${api_address}/scores`, {
-                method: 'GET',
-                headers: {
-                    token: `${token}`
-                }
-            });
-            if (!response1.ok) {
-                await e.reply(`获取成绩失败：${response1.status} ${response1.statusText}`, true);
+            const result1 = await this.getResponse(token, 'scores');
+            if (result1.code !== 1) {
+                await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
-
-            // 请求服务器获取排名数据
-            const response2 = await fetch(`${api_address}/rank`, {
-                method: 'GET',
-                headers: {
-                    token: `${token}`
-                }
-            });
-            if (!response2.ok) {
-                await e.reply(`获取排名失败：${response2.status} ${response2.statusText}`, true);
-                return;
-            }
-
-            const result1 = await response1.json();
-            const result2 = await response2.json();
-
-            // 检查数据是否正常
-            if (result1.code !== 1 || !result1.data) {
+            if (!result1.data) {
                 await e.reply('成绩数据异常，请稍后重试。', true);
                 return;
             }
-            if (result2.code !== 1 || !result2.data) {
+            const result2 = await this.getResponse(token, 'rank');
+            if (result2.code !== 1) {
+                await e.reply('token已失效，请重新设置或刷新token。', true);
+                return;
+            }
+            if (!result2.data) {
                 await e.reply('排名数据异常，请稍后重试。', true);
                 return;
             }
@@ -355,23 +312,13 @@ export class Query extends plugin {
         }
 
         try {
-            // 请求服务器获取个人信息
-            const response = await fetch(`${api_address}/info`, {
-                method: 'GET',
-                headers: {
-                    token: `${token}`
-                }
-            });
+            const result = await this.getResponse(token, 'info');
 
-            if (!response.ok) {
-                await e.reply(`获取个人信息失败：${response.status} ${response.statusText}`, true);
+            if (result.code !== 1) {
+                await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
-
-            const result = await response.json();
-
-            // 检查数据是否正常
-            if (result.code !== 1 || !result.data) {
+            if (!result.data) {
                 await e.reply('个人信息异常，请稍后重试。', true);
                 return;
             }
@@ -390,5 +337,23 @@ export class Query extends plugin {
             logger.error('Error fetching or parsing schedule:', error);
             await e.reply('获取个人信息时发生错误，请稍后再试。', true);
         }
+    }
+
+    async getResponse(token, type) {
+        let data;
+        for (let i = 0; i < 8; i++) {
+            const response = await fetch(`${api_address}/${type}`, {
+                method: 'GET',
+                headers: {
+                    token: `${token}`
+                }
+            });
+            data = await response.json();
+            if (data.code === 1 && data.data) {
+                break;
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        return data;
     }
 }
