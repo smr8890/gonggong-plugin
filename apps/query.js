@@ -5,6 +5,24 @@ import { Plugin_Path } from '../components/index.js';
 const tokenPath = './data/xtu-gong/userlist.json';
 const api_address = Config.getcfg.api_address;
 
+export async function getResponse(token, type) {
+    let data;
+    for (let i = 0; i < 8; i++) {
+        const response = await fetch(`${api_address}/${type}`, {
+            method: 'GET',
+            headers: {
+                token: `${token}`
+            }
+        });
+        data = await response.json();
+        if (data.code === 1 && data.data) {
+            break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    return data;
+}
+
 export class Query extends plugin {
     constructor() {
         super({
@@ -50,7 +68,7 @@ export class Query extends plugin {
         }
 
         try {
-            const result = await this.getResponse(token, 'courses');
+            const result = await getResponse(token, 'courses');
 
             if (result.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
@@ -125,7 +143,7 @@ export class Query extends plugin {
         }
 
         try {
-            const result = await this.getResponse(token, 'exams');
+            const result = await getResponse(token, 'exams');
 
             if (result.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
@@ -213,7 +231,7 @@ export class Query extends plugin {
         }
 
         try {
-            const result1 = await this.getResponse(token, 'scores');
+            const result1 = await getResponse(token, 'scores');
             if (result1.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
@@ -222,7 +240,7 @@ export class Query extends plugin {
                 await e.reply('成绩数据异常，请稍后重试。', true);
                 return;
             }
-            const result2 = await this.getResponse(token, 'rank');
+            const result2 = await getResponse(token, 'rank');
             if (result2.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
@@ -312,7 +330,7 @@ export class Query extends plugin {
         }
 
         try {
-            const result = await this.getResponse(token, 'info');
+            const result = await getResponse(token, 'info');
 
             if (result.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
@@ -337,23 +355,5 @@ export class Query extends plugin {
             logger.error('Error fetching or parsing schedule:', error);
             await e.reply('获取个人信息时发生错误，请稍后再试。', true);
         }
-    }
-
-    async getResponse(token, type) {
-        let data;
-        for (let i = 0; i < 8; i++) {
-            const response = await fetch(`${api_address}/${type}`, {
-                method: 'GET',
-                headers: {
-                    token: `${token}`
-                }
-            });
-            data = await response.json();
-            if (data.code === 1 && data.data) {
-                break;
-            }
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        return data;
     }
 }

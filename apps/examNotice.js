@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { Config } from '../components/index.js';
+import { getResponse } from './query.js';
 const tokenPath = './data/xtu-gong/userlist.json';
 const api_address = Config.getcfg.api_address;
 const exam_time = Config.getcfg.exam_time;
@@ -49,19 +50,18 @@ export class ExamNotice extends plugin {
         }
 
         try {
-            const response = await fetch(`${api_address}/exams`, {
-                method: 'GET',
-                headers: {
-                    token: `${token}`
-                }
-            });
+            const result = await getResponse(token, 'exams');
 
-            if (!response.ok) {
-                await e.reply(`获取考试数据失败：${response.status} ${response.statusText}`, true);
+            if (result.code !== 1) {
+                await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
 
-            const result = await response.json();
+            if (!result.data) {
+                await e.reply('考试数据异常，请稍后重试。', true);
+                return;
+            }
+
             const exams = result.data.exams;
 
             if (exams.length === 0) {
