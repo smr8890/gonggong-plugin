@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { Config } from '../components/index.js';
 import { getResponse } from './query.js';
+import { getToken } from './query.js';
 const tokenPath = './data/xtu-gong/userlist.json';
 const api_address = Config.getcfg.api_address;
 const exam_time = Config.getcfg.exam_time;
@@ -35,19 +36,13 @@ export class ExamNotice extends plugin {
 
     async openExamNotice(e) {
         const userId = e.user_id;
-        let userList = {};
-        if (!fs.existsSync(tokenPath)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
-            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
-        }
-        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-        if (!userList[userId]) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
-        const { token } = userList[userId];
+
+        const token = await getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
+
+        let userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
 
         try {
             const result = await getResponse(token, 'exams');
