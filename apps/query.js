@@ -23,6 +23,20 @@ export async function getResponse(token, type) {
     return data;
 }
 
+export async function getToken(userId) {
+    let userList = {};
+    if (!fs.existsSync(tokenPath)) {
+        fs.mkdirSync('./data/xtu-gong', { recursive: true });
+        fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
+    }
+    userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    if (!userList[userId]) {
+        return;
+    }
+    const { token } = userList[userId];
+    return token;
+}
+
 export class Query extends plugin {
     constructor() {
         super({
@@ -53,16 +67,7 @@ export class Query extends plugin {
 
     async getSchedule(e) {
         const userId = e.user_id;
-        let userList = {};
-        if (!fs.existsSync(tokenPath)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
-            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
-        }
-        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-        if (!userList[userId]) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
-        const { token } = userList[userId];
+        const token = await getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
@@ -128,16 +133,7 @@ export class Query extends plugin {
 
     async getExam(e) {
         const userId = e.user_id;
-        let userList = {};
-        if (!fs.existsSync(tokenPath)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
-            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
-        }
-        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-        if (!userList[userId]) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
-        const { token } = userList[userId];
+        const token = await getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
@@ -216,16 +212,7 @@ export class Query extends plugin {
 
     async getScore(e) {
         const userId = e.user_id;
-        let userList = {};
-        if (!fs.existsSync(tokenPath)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
-            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
-        }
-        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-        if (!userList[userId]) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
-        const { token } = userList[userId];
+        const token = await getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
@@ -315,16 +302,7 @@ export class Query extends plugin {
 
     async getInfo(e) {
         const userId = e.user_id;
-        let userList = {};
-        if (!fs.existsSync(tokenPath)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
-            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
-        }
-        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-        if (!userList[userId]) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
-        const { token } = userList[userId];
+        const token = await getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
