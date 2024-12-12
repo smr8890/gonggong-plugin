@@ -79,7 +79,7 @@ export class ExamNotice extends plugin {
 
             this.reply('考试提醒已开启，数据已更新。');
         } catch (error) {
-            console.error('Error fetching exam data:', error);
+            logger.error('Error fetching exam data:', error);
             this.reply('获取考试数据时出错，请稍后再试。');
         }
     }
