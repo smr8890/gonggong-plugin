@@ -2,10 +2,12 @@ import fs from 'fs';
 import { Config } from '../components/index.js';
 import { getResponse } from './query.js';
 import { getToken } from './query.js';
+import { Plugin_Path } from '../components/index.js';
+import puppeteer from '../../../lib/puppeteer/puppeteer.js';
 const tokenPath = './data/xtu-gong/userlist.json';
-const api_address = Config.getcfg.api_address;
 const exam_time = Config.getcfg.exam_time;
 const DataPath = './data/xtu-gong';
+const userScorePath = `${DataPath}/scores`;
 
 export class ScoreNotice extends plugin {
     constructor() {
@@ -54,20 +56,129 @@ export class ScoreNotice extends plugin {
                 await e.reply('成绩数据异常，请稍后重试。', true);
                 return;
             }
-            const userScorePath = `${DataPath}/scores/${userId}.json`;
-            fs.writeFileSync(userScorePath, JSON.stringify(result.data, null, 2), 'utf8');
-            await e.reply('成绩提醒已开启，成绩数据已保存。', true);
-            const existingScores = fs.existsSync(userScorePath) ? JSON.parse(fs.readFileSync(userScorePath, 'utf8')) : null;
-            if (JSON.stringify(existingScores) !== JSON.stringify(result.data)) {
-                // Perform the next step operation here
-                await e.reply('成绩有更新，请注意查看。', true);
-            } else {
-                await e.reply('成绩未发生变化。', true);
+
+
+            const scores = result.data.scores;
+            if (!fs.existsSync(userScorePath)) {
+                fs.mkdirSync(userScorePath, { recursive: true });
             }
+            fs.writeFileSync(`${userScorePath}/${userId}.json`, JSON.stringify(scores, null, 2), 'utf8');
+
+            userList[userId].scoreNotice = true;
+            fs.writeFileSync(tokenPath, JSON.stringify(userList, null, 2), 'utf8');
+            await e.reply('成绩提醒已开启，成绩数据已更新。', true);
 
         } catch (error) {
             logger.error('Error fetching score data:', error);
             this.reply('获取成绩数据时出错，请稍后再试。');
+        }
+    }
+
+    async closeScoreNotice(e) {
+        const userId = e.user_id;
+
+        let userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        if (!fs.existsSync(tokenPath)) {
+            fs.mkdirSync('./data/xtu-gong', { recursive: true });
+            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
+        }
+        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        if (!userList[userId]) {
+            return this.reply('你尚未开启成绩提醒，无需关闭。');
+        }
+        if (!userList[userId].scoreNotice) {
+            return this.reply('你尚未开启成绩提醒，无需关闭。');
+        }
+        userList[userId].scoreNotice = false;
+        fs.writeFileSync(tokenPath, JSON.stringify(userList, null, 2), 'utf8');
+        this.reply('成绩提醒已关闭。');
+    }
+
+    async noticeTask() {
+        if (fs.existsSync(tokenPath)) {
+            const userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+            for (const userId in userList) {
+                if (userList[userId].scoreNotice) {
+                    const scoreFilePath = `${userScorePath}/${userId}.json`;
+                    if (fs.existsSync(scoreFilePath)) {
+                        const token = await getToken(userId);
+                        if (!token) {
+                            continue;
+                        }
+                        const result1 = await getResponse(token, 'scores');
+                        if (result1.code !== 1 || !result1.data) {
+                            continue;
+                        }
+                        let scores = result1.data.scores;
+                        const scores2 = JSON.parse(fs.readFileSync(scoreFilePath, 'utf8'));
+                        if (JSON.stringify(scores) !== JSON.stringify(scores2)) {
+                            const result2 = await getResponse(token, 'rank');
+                            if (result2.code !== 1 || !result2.data) {
+                                continue;
+                            }
+                            const rank = result2.data;
+                            fs.writeFileSync(scoreFilePath, JSON.stringify(scores, null, 2), 'utf8');
+
+                            // 对 scores 进行预处理，按学期和课程类型分组
+                            function getTermName(termNumber) {
+                                const terms = [
+                                    '大一上', '大一下', '大二上', '大二下',
+                                    '大三上', '大三下', '大四上', '大四下'
+                                ];
+                                return terms[termNumber - 1] || '未知学期';
+                            }
+
+                            const termsMap = {};
+
+                            scores.forEach(score => {
+                                const termName = getTermName(score.term);
+                                if (!termsMap[termName]) {
+                                    termsMap[termName] = {};
+                                }
+                                const type = score.type === '必修' ? '必修' : '选修';
+                                if (!termsMap[termName][type]) {
+                                    termsMap[termName][type] = [];
+                                }
+                                termsMap[termName][type].push({
+                                    name: score.name,
+                                    score: score.score,
+                                    credit: score.credit
+                                });
+                            });
+
+                            const processedScores = Object.keys(termsMap).sort((a, b) => {
+                                const termOrder = [
+                                    '大一上', '大一下', '大二上', '大二下',
+                                    '大三上', '大三下', '大四上', '大四下'
+                                ];
+                                return termOrder.indexOf(b) - termOrder.indexOf(a);
+                            }).map(termName => {
+                                const types = ['必修', '选修'].filter(type => termsMap[termName][type]).map(type => {
+                                    return {
+                                        type: type,
+                                        scores: termsMap[termName][type]
+                                    };
+                                });
+                                return {
+                                    term: termName,
+                                    data: types
+                                };
+                            });
+
+                            scores = processedScores;
+                            const base64 = await puppeteer.screenshot('xtu-gong-plugin', {
+                                saveId: 'score',
+                                imgType: 'png',
+                                tplFile: `${Plugin_Path}/resources/query/score.html`,
+                                scores: scores,
+                                rank: rank,
+                            });
+                            Bot.pickUser(userId).sendMsg(`你有新的成绩出炉啦！`);
+                            Bot.pickUser(userId).sendMsg(base64);
+                        }
+                    }
+                }
+            }
         }
     }
 }
