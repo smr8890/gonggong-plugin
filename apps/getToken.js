@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { Config } from '../components/index.js';
+import { getToken } from './query.js';
 const api_address = Config.getcfg.api_address;
 
 export class GetToken extends plugin {
@@ -21,6 +22,10 @@ export class GetToken extends plugin {
                 {
                     reg: '^#?刷新token$',
                     fnc: 'updateToken'
+                },
+                {
+                    reg: '^#?我的token$',
+                    fnc: 'myToken'
                 },
                 {
                     reg: '^#?删除账号$',
@@ -168,5 +173,14 @@ export class GetToken extends plugin {
         delete userList[userId];
         fs.writeFileSync(path, JSON.stringify(userList, null, 2), 'utf8');
         return this.reply('账号删除成功');
+    }
+
+    async myToken(e) {
+        const userId = e.user_id;
+        const token = await getToken(userId);
+        if (!token) {
+            return this.reply('未找到您的 token');
+        }
+        return this.reply(token);
     }
 }
