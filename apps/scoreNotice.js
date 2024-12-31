@@ -8,6 +8,7 @@ const tokenPath = './data/xtu-gong/userlist.json';
 const exam_time = Config.getcfg.exam_time;
 const DataPath = './data/xtu-gong';
 const userScorePath = `${DataPath}/scores`;
+const api_address = Config.getcfg.api_address;
 
 export class ScoreNotice extends plugin {
     constructor() {
@@ -101,11 +102,18 @@ export class ScoreNotice extends plugin {
                 if (userList[userId].scoreNotice) {
                     const scoreFilePath = `${userScorePath}/${userId}.json`;
                     if (fs.existsSync(scoreFilePath)) {
-                        const token = await getToken(userId);
+                        let token = await getToken(userId);
                         if (!token) {
                             continue;
                         }
-                        const result1 = await getResponse(token, 'scores');
+                        let result1 = await getResponse(token, 'scores');
+                        if (result1.code === 0 || result1.code === -1) {
+                            const updated = await updateToken(userId);
+                            if (updated) {
+                                token = await getToken(userId);
+                                result1 = await getResponse(token, 'scores');
+                            }
+                        }
                         if (result1.code !== 1 || !result1.data) {
                             continue;
                         }
@@ -181,4 +189,36 @@ export class ScoreNotice extends plugin {
             }
         }
     }
+}
+
+async function updateToken(userId) {
+    const userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    if (!userList[userId] || !userList[userId].username || !userList[userId].password) {
+        return false;
+    }
+
+    let { username, password } = userList[userId];
+    username = Buffer.from(username, 'base64').toString('utf8');
+    password = Buffer.from(password, 'base64').toString('utf8');
+
+    const response = await fetch(`${api_address}/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+    });
+
+    if (!response.ok) {
+        return false;
+    }
+
+    const result = await response.json();
+    if (result.code !== 1) {
+        return false;
+    }
+
+    userList[userId].token = result.data.token;
+    fs.writeFileSync(tokenPath, JSON.stringify(userList, null, 2), 'utf8');
+    return true;
 }
