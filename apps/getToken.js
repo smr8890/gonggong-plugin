@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { Config } from '../components/index.js';
-import { getToken } from './query.js';
+import { Utils } from '../components/index.js';
 const api_address = Config.getcfg.api_address;
 
 export class GetToken extends plugin {
@@ -177,7 +177,7 @@ export class GetToken extends plugin {
 
     async myToken(e) {
         const userId = e.user_id;
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token');
         }

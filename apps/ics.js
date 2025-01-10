@@ -1,9 +1,6 @@
 import fs from 'fs';
-import puppeteer from '../../../lib/puppeteer/puppeteer.js';
 import { Config } from '../components/index.js';
-import { Plugin_Path } from '../components/index.js';
-import { getResponse } from './query.js';
-import { getToken } from './query.js';
+import { Utils } from '../components/index.js';
 const api_address = Config.getcfg.api_address;
 const tmpPath = './data/xtu-gong/tmp';
 
@@ -36,7 +33,7 @@ export class Ics extends plugin {
     async getCoursesIcs(e) {
         const userId = e.user_id;
 
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
@@ -65,7 +62,7 @@ export class Ics extends plugin {
     async getExamsIcs(e) {
         const userId = e.user_id;
 
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }

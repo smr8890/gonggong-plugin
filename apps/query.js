@@ -1,41 +1,6 @@
-import fs from 'fs';
 import puppeteer from '../../../lib/puppeteer/puppeteer.js';
-import { Config } from '../components/index.js';
 import { Plugin_Path } from '../components/index.js';
-const tokenPath = './data/xtu-gong/userlist.json';
-const api_address = Config.getcfg.api_address;
-
-export async function getResponse(token, type) {
-    let data;
-    for (let i = 0; i < 8; i++) {
-        const response = await fetch(`${api_address}/${type}`, {
-            method: 'GET',
-            headers: {
-                token: `${token}`
-            }
-        });
-        data = await response.json();
-        if (data.code === 1 && data.data) {
-            break;
-        }
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    return data;
-}
-
-export async function getToken(userId) {
-    let userList = {};
-    if (!fs.existsSync(tokenPath)) {
-        fs.mkdirSync('./data/xtu-gong', { recursive: true });
-        fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
-    }
-    userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-    if (!userList[userId]) {
-        return;
-    }
-    const { token } = userList[userId];
-    return token;
-}
+import { Utils } from '../components/index.js';
 
 export class Query extends plugin {
     constructor() {
@@ -67,14 +32,13 @@ export class Query extends plugin {
 
     async getSchedule(e) {
         const userId = e.user_id;
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
 
         try {
-            const result = await getResponse(token, 'courses');
-
+            const result = await Utils.getResponse(userId, 'courses');
             if (result.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
@@ -133,13 +97,13 @@ export class Query extends plugin {
 
     async getExam(e) {
         const userId = e.user_id;
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
 
         try {
-            const result = await getResponse(token, 'exams');
+            const result = await Utils.getResponse(userId, 'exams');
 
             if (result.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
@@ -212,13 +176,13 @@ export class Query extends plugin {
 
     async getScore(e) {
         const userId = e.user_id;
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
 
         try {
-            const result1 = await getResponse(token, 'scores');
+            const result1 = await Utils.getResponse(userId, 'scores');
             if (result1.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
@@ -227,7 +191,7 @@ export class Query extends plugin {
                 await e.reply('成绩数据异常，请稍后重试。', true);
                 return;
             }
-            const result2 = await getResponse(token, 'rank');
+            const result2 = await Utils.getResponse(userId, 'rank');
             if (result2.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
@@ -302,13 +266,13 @@ export class Query extends plugin {
 
     async getInfo(e) {
         const userId = e.user_id;
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
 
         try {
-            const result = await getResponse(token, 'info');
+            const result = await Utils.getResponse(userId, 'info');
 
             if (result.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);

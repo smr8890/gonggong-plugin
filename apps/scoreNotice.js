@@ -1,14 +1,12 @@
 import fs from 'fs';
 import { Config } from '../components/index.js';
-import { getResponse } from './query.js';
-import { getToken } from './query.js';
+import { Utils } from '../components/index.js';
 import { Plugin_Path } from '../components/index.js';
 import puppeteer from '../../../lib/puppeteer/puppeteer.js';
-const tokenPath = './data/xtu-gong/userlist.json';
+import { userListPath } from '../components/index.js';
 const exam_time = Config.getcfg.exam_time;
 const DataPath = './data/xtu-gong';
 const userScorePath = `${DataPath}/scores`;
-const api_address = Config.getcfg.api_address;
 
 export class ScoreNotice extends plugin {
     constructor() {
@@ -39,14 +37,14 @@ export class ScoreNotice extends plugin {
     async openScoreNotice(e) {
         const userId = e.user_id;
 
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
 
-        let userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        let userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
         try {
-            const result = await getResponse(token, 'scores');
+            const result = await Utils.getResponse(userId, 'scores');
 
             if (result.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
@@ -66,7 +64,7 @@ export class ScoreNotice extends plugin {
             fs.writeFileSync(`${userScorePath}/${userId}.json`, JSON.stringify(scores, null, 2), 'utf8');
 
             userList[userId].scoreNotice = true;
-            fs.writeFileSync(tokenPath, JSON.stringify(userList, null, 2), 'utf8');
+            fs.writeFileSync(userListPath, JSON.stringify(userList, null, 2), 'utf8');
             await e.reply('成绩提醒已开启，成绩数据已更新。', true);
 
         } catch (error) {
@@ -78,12 +76,12 @@ export class ScoreNotice extends plugin {
     async closeScoreNotice(e) {
         const userId = e.user_id;
 
-        let userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-        if (!fs.existsSync(tokenPath)) {
+        let userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
+        if (!fs.existsSync(userListPath)) {
             fs.mkdirSync('./data/xtu-gong', { recursive: true });
-            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
+            fs.writeFileSync(userListPath, JSON.stringify({}), 'utf8');
         }
-        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
         if (!userList[userId]) {
             return this.reply('你尚未开启成绩提醒，无需关闭。');
         }
@@ -91,36 +89,32 @@ export class ScoreNotice extends plugin {
             return this.reply('你尚未开启成绩提醒，无需关闭。');
         }
         userList[userId].scoreNotice = false;
-        fs.writeFileSync(tokenPath, JSON.stringify(userList, null, 2), 'utf8');
+        fs.writeFileSync(userListPath, JSON.stringify(userList, null, 2), 'utf8');
         this.reply('成绩提醒已关闭。');
     }
 
     async noticeTask() {
-        if (fs.existsSync(tokenPath)) {
-            const userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        if (fs.existsSync(userListPath)) {
+            const userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
             for (const userId in userList) {
                 if (userList[userId].scoreNotice) {
                     const scoreFilePath = `${userScorePath}/${userId}.json`;
                     if (fs.existsSync(scoreFilePath)) {
-                        let token = await getToken(userId);
-                        if (!token) {
-                            continue;
-                        }
-                        let result1 = await getResponse(token, 'scores');
-                        if (result1.code === 0 || result1.code === -1) {
-                            const updated = await updateToken(userId);
-                            if (updated) {
-                                token = await getToken(userId);
-                                result1 = await getResponse(token, 'scores');
-                            }
-                        }
+                        let result1 = await Utils.getResponse(userId, 'scores');
+                        // if (result1.code === 0 || result1.code === -1) {
+                        //     const updated = await updateToken(userId);
+                        //     if (updated) {
+                        //         token = await Utils.getToken(userId);
+                        //         result1 = await Utils.getResponse(token, 'scores');
+                        //     }
+                        // }
                         if (result1.code !== 1 || !result1.data) {
                             continue;
                         }
                         let scores = result1.data.scores;
                         const scores2 = JSON.parse(fs.readFileSync(scoreFilePath, 'utf8'));
                         if (JSON.stringify(scores) !== JSON.stringify(scores2)) {
-                            const result2 = await getResponse(token, 'rank');
+                            const result2 = await Utils.getResponse(userId, 'rank');
                             if (result2.code !== 1 || !result2.data) {
                                 continue;
                             }
@@ -189,36 +183,4 @@ export class ScoreNotice extends plugin {
             }
         }
     }
-}
-
-async function updateToken(userId) {
-    const userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-    if (!userList[userId] || !userList[userId].username || !userList[userId].password) {
-        return false;
-    }
-
-    let { username, password } = userList[userId];
-    username = Buffer.from(username, 'base64').toString('utf8');
-    password = Buffer.from(password, 'base64').toString('utf8');
-
-    const response = await fetch(`${api_address}/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-    });
-
-    if (!response.ok) {
-        return false;
-    }
-
-    const result = await response.json();
-    if (result.code !== 1) {
-        return false;
-    }
-
-    userList[userId].token = result.data.token;
-    fs.writeFileSync(tokenPath, JSON.stringify(userList, null, 2), 'utf8');
-    return true;
 }

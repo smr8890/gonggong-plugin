@@ -1,9 +1,7 @@
 import fs from 'fs';
 import { Config } from '../components/index.js';
-import { getResponse } from './query.js';
-import { getToken } from './query.js';
-const tokenPath = './data/xtu-gong/userlist.json';
-const api_address = Config.getcfg.api_address;
+import { Utils } from '../components/index.js';
+import { userListPath } from '../components/index.js';
 const exam_time = Config.getcfg.exam_time;
 const examDir = './data/xtu-gong/exams';
 const advance_days = Config.getcfg.advance_days;
@@ -37,15 +35,15 @@ export class ExamNotice extends plugin {
     async openExamNotice(e) {
         const userId = e.user_id;
 
-        const token = await getToken(userId);
+        const token = await Utils.getToken(userId);
         if (!token) {
             return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
         }
 
-        let userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        let userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
 
         try {
-            const result = await getResponse(token, 'exams');
+            const result = await Utils.getResponse(userId, 'exams');
 
             if (result.code !== 1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
@@ -75,7 +73,7 @@ export class ExamNotice extends plugin {
             fs.writeFileSync(`${examDir}/${userId}.json`, JSON.stringify(exams, null, 2), 'utf-8');
 
             userList[userId].examNotice = true;
-            fs.writeFileSync(tokenPath, JSON.stringify(userList, null, 2), 'utf8');
+            fs.writeFileSync(userListPath, JSON.stringify(userList, null, 2), 'utf8');
 
             this.reply('考试提醒已开启，数据已更新。');
         } catch (error) {
@@ -87,11 +85,11 @@ export class ExamNotice extends plugin {
     async closeExamNotice(e) {
         const userId = e.user_id;
         let userList = {};
-        if (!fs.existsSync(tokenPath)) {
+        if (!fs.existsSync(userListPath)) {
             fs.mkdirSync('./data/xtu-gong', { recursive: true });
-            fs.writeFileSync(tokenPath, JSON.stringify({}), 'utf8');
+            fs.writeFileSync(userListPath, JSON.stringify({}), 'utf8');
         }
-        userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
         if (!userList[userId]) {
             return this.reply('你尚未开启考试提醒，无需关闭。');
         }
@@ -99,13 +97,13 @@ export class ExamNotice extends plugin {
             return this.reply('你尚未开启考试提醒，无需关闭。');
         }
         userList[userId].examNotice = false;
-        fs.writeFileSync(tokenPath, JSON.stringify(userList, null, 2), 'utf8');
+        fs.writeFileSync(userListPath, JSON.stringify(userList, null, 2), 'utf8');
         this.reply('考试提醒已关闭。');
     }
 
     async noticeTask() {
-        if (fs.existsSync(tokenPath)) {
-            const userList = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        if (fs.existsSync(userListPath)) {
+            const userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
             for (const userId in userList) {
                 if (userList[userId].examNotice) {
                     const examFilePath = `${examDir}/${userId}.json`;
