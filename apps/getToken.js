@@ -118,42 +118,18 @@ export class GetToken extends plugin {
 
     async updateToken(e) {
         const userId = e.user_id;
-        const path = './data/xtu-gong/userlist.json';
-
-        if (!fs.existsSync(path)) {
-            return this.reply('请先设置账号和密码');
+        const updated = await Utils.updateToken(userId);
+        if (updated === 1) {
+            return this.reply('token刷新成功');
+        } else if (updated === -1) {
+            return this.reply('请先设置账号和密码，方法：#设置账号 学号 密码');
+        } else if (updated === -2) {
+            return this.reply('账号密码错误');
+        } else if (updated === -3) {
+            return this.reply('账户未初始化，请检查教务系统是否需要更改密码');
+        } else {
+            return this.reply('系统超时，请稍后再试');
         }
-
-        const userList = JSON.parse(fs.readFileSync(path, 'utf8'));
-
-        if (!userList[userId] || !userList[userId].username || !userList[userId].password) {
-            return this.reply('请先设置账号和密码');
-        }
-
-        let { username, password } = userList[userId];
-        username = Buffer.from(username, 'base64').toString('utf8');
-        password = Buffer.from(password, 'base64').toString('utf8');
-
-        const response = await fetch(`${api_address}/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-
-        if (!response.ok) {
-            return this.reply('刷新token失败，请检查账号和密码');
-        }
-
-        const result = await response.json();
-        if (result.code !== 1) {
-            return this.reply('刷新token失败，请检查账号和密码');
-        }
-
-        userList[userId].token = result.data.token;
-        fs.writeFileSync(path, JSON.stringify(userList, null, 2), 'utf8');
-        return this.reply('token刷新成功');
     }
 
     async deleteAccount(e) {

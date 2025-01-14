@@ -6,8 +6,15 @@ const api_address = Config.getcfg.api_address;
 
 class Utils {
     async getResponse(userId, type) {
+        /*  -  1：成功请求
+            - -1：token过期
+            - -2：token不存在
+            -  0：请求失败  */
         let token = await this.getToken(userId);
         let data;
+        if (!token) {
+            return { code: -2 };
+        }
         for (let i = 0; i < 8; i++) {
             const response = await fetch(`${api_address}/${type}`, {
                 method: 'GET',
@@ -15,20 +22,38 @@ class Utils {
                     token: `${token}`
                 }
             });
-            data = await response.json();
-            if (data.code === 0 || data.code === -1) {
+            if (response.status === 203) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                continue;
+            }
+            if (response.status === 401 || response.status === 423) {
                 const updated = await this.updateToken(userId);
-                if (updated) {
+                if (updated === 1) {
                     token = await this.getToken(userId);
                     continue;
                 } else {
+                    data = { code: -1 };
                     break;
                 }
             }
-            if (data.code === 1 && data.data) {
+            if (response.status === 200) {
+                data = await response.json();
                 break;
             }
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            data = { code: 0 };
+            // if (data.code === 0 || data.code === -1) {
+            //     const updated = await this.updateToken(userId);
+            //     if (updated) {
+            //         token = await this.getToken(userId);
+            //         continue;
+            //     } else {
+            //         break;
+            //     }
+            // }
+            // if (data.code === 1 && data.data) {
+            //     break;
+            // }
+            // await new Promise(resolve => setTimeout(resolve, 1000));
         }
         return data;
     }
@@ -48,9 +73,15 @@ class Utils {
     }
 
     async updateToken(userId) {
+        /*  -  1：成功更新token
+            - -1：账号密码不存在
+            - -2：账号密码错误
+            - -3：账户未初始化
+            - -4：教务系统超时
+            -  0：其他错误  */
         const userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
         if (!userList[userId] || !userList[userId].username || !userList[userId].password) {
-            return false;
+            return -1;
         }
 
         let { username, password } = userList[userId];
@@ -65,18 +96,27 @@ class Utils {
             body: JSON.stringify({ username, password })
         });
 
-        if (!response.ok) {
-            return false;
+        if (response.status === 401) {
+            return -2;
+        }
+        if (response.status === 409) {
+            return -3;
+        }
+        if (response.status === 503) {
+            return -4;
         }
 
-        const result = await response.json();
-        if (result.code !== 1) {
-            return false;
+        if (response.status !== 200) {
+            return 0;
         }
+        const result = await response.json();
+        // if (result.code !== 1) {
+        //     return false;
+        // }
 
         userList[userId].token = result.data.token;
         fs.writeFileSync(userListPath, JSON.stringify(userList, null, 2), 'utf8');
-        return true;
+        return 1;
     }
 }
 
