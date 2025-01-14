@@ -32,20 +32,19 @@ export class Query extends plugin {
 
     async getSchedule(e) {
         const userId = e.user_id;
-        const token = await Utils.getToken(userId);
-        if (!token) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
 
         try {
             const result = await Utils.getResponse(userId, 'courses');
-            if (result.code !== 1) {
+            if (result.code === -2) {
+                await e.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。', true);
+                return;
+            }
+            if (result.code === -1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
-
-            if (!result.data?.courses) {
-                await e.reply('课表数据异常，请稍后重试。', true);
+            if (result.code === 0) {
+                await e.reply('获取课表数据时出错，请稍后再试。', true);
                 return;
             }
 
@@ -97,21 +96,20 @@ export class Query extends plugin {
 
     async getExam(e) {
         const userId = e.user_id;
-        const token = await Utils.getToken(userId);
-        if (!token) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
 
         try {
             const result = await Utils.getResponse(userId, 'exams');
 
-            if (result.code !== 1) {
+            if (result.code === -2) {
+                await e.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。', true);
+                return;
+            }
+            if (result.code === -1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
-
-            if (!result.data) {
-                await e.reply('考试数据异常，请稍后重试。', true);
+            if (result.code === 0) {
+                await e.reply('获取考试数据时出错，请稍后再试。', true);
                 return;
             }
 
@@ -176,28 +174,32 @@ export class Query extends plugin {
 
     async getScore(e) {
         const userId = e.user_id;
-        const token = await Utils.getToken(userId);
-        if (!token) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
 
         try {
             const result1 = await Utils.getResponse(userId, 'scores');
-            if (result1.code !== 1) {
+            if (result1.code === -2) {
+                await e.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。', true);
+                return;
+            }
+            if (result1.code === -1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
-            if (!result1.data) {
-                await e.reply('成绩数据异常，请稍后重试。', true);
+            if (result1.code === 0) {
+                await e.reply('获取成绩数据时出错，请稍后再试。', true);
                 return;
             }
             const result2 = await Utils.getResponse(userId, 'rank');
-            if (result2.code !== 1) {
+            if (result2.code === -2) {
+                await e.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。', true);
+                return;
+            }
+            if (result2.code === -1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
-            if (!result2.data) {
-                await e.reply('排名数据异常，请稍后重试。', true);
+            if (result2.code === 0) {
+                await e.reply('获取排名数据时出错，请稍后再试。', true);
                 return;
             }
 
@@ -266,20 +268,20 @@ export class Query extends plugin {
 
     async getInfo(e) {
         const userId = e.user_id;
-        const token = await Utils.getToken(userId);
-        if (!token) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
 
         try {
             const result = await Utils.getResponse(userId, 'info');
 
-            if (result.code !== 1) {
+            if (result.code === -2) {
+                await e.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。', true);
+                return;
+            }
+            if (result.code === -1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
-            if (!result.data) {
-                await e.reply('个人信息异常，请稍后重试。', true);
+            if (result.code === 0) {
+                await e.reply('获取个人信息数据时出错，请稍后再试。', true);
                 return;
             }
 

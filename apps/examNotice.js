@@ -35,24 +35,24 @@ export class ExamNotice extends plugin {
     async openExamNotice(e) {
         const userId = e.user_id;
 
-        const token = await Utils.getToken(userId);
-        if (!token) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
+        // const token = await Utils.getToken(userId);
+        // if (!token) {
+        //     return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
+        // }
 
         let userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
 
         try {
             const result = await Utils.getResponse(userId, 'exams');
 
-            if (result.code !== 1) {
-                await e.reply('token已失效，请重新设置或刷新token。', true);
-                return;
+            if (result.code === -2) {
+                return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
             }
-
-            if (!result.data) {
-                await e.reply('考试数据异常，请稍后重试。', true);
-                return;
+            if (result.code === -1) {
+                return this.reply('token已失效，请重新设置或刷新token。');
+            }
+            if (result.code === 0) {
+                return this.reply('获取考试数据时出错，请稍后再试。');
             }
 
             const exams = result.data.exams;

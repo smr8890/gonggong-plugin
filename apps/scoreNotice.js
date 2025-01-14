@@ -37,22 +37,20 @@ export class ScoreNotice extends plugin {
     async openScoreNotice(e) {
         const userId = e.user_id;
 
-        const token = await Utils.getToken(userId);
-        if (!token) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
-
         let userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
         try {
             const result = await Utils.getResponse(userId, 'scores');
 
-            if (result.code !== 1) {
+            if (result.code === -2) {
+                await e.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。', true);
+                return;
+            }
+            if (result.code === -1) {
                 await e.reply('token已失效，请重新设置或刷新token。', true);
                 return;
             }
-
-            if (!result.data) {
-                await e.reply('成绩数据异常，请稍后重试。', true);
+            if (result.code === 0) {
+                await e.reply('获取成绩数据时出错，请稍后再试。', true);
                 return;
             }
 
