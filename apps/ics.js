@@ -13,11 +13,11 @@ export class Ics extends plugin {
             priority: 10,
             rule: [
                 {
-                    reg: '^#?课表日程$',
+                    reg: '^#?课表日历$',
                     fnc: 'getCoursesIcs'
                 },
                 {
-                    reg: '^#?考试日程$',
+                    reg: '^#?考试日历$',
                     fnc: 'getExamsIcs'
                 }
             ]
