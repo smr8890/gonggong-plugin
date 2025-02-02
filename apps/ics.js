@@ -43,7 +43,7 @@ export class Ics extends plugin {
                 fs.mkdirSync(tmpPath, { recursive: true });
             }
 
-            const filePath = `${tmpPath}/${e.nickname}的课表.ics`;
+            const filePath = `${tmpPath}/${e.sender.nickname}的课表.ics`;
             const buffer = await getIcs(token, 'courses.ics');
             fs.writeFileSync(filePath, Buffer.from(buffer));
 
@@ -72,7 +72,7 @@ export class Ics extends plugin {
                 fs.mkdirSync(tmpPath, { recursive: true });
             }
 
-            const filePath = `${tmpPath}/${e.nickname}的考试.ics`;
+            const filePath = `${tmpPath}/${e.sender.nickname}的考试.ics`;
             const buffer = await getIcs(token, 'exams.ics');
             fs.writeFileSync(filePath, Buffer.from(buffer));
 
