@@ -118,6 +118,45 @@ class Utils {
         fs.writeFileSync(userListPath, JSON.stringify(userList, null, 2), 'utf8');
         return 1;
     }
+
+    async getIcs(userId, type) {
+        /*  -  1：成功请求
+            - -1：token过期
+            - -2：token不存在
+            -  0：请求失败  */
+        let token = await this.getToken(userId);
+        if (!token) {
+            return { code: -2, buffer: null };
+        }
+
+        for (let i = 0; i < 8; i++) {
+            const response = await fetch(`${api_address}/${type}`, {
+                method: 'GET',
+                headers: {
+                    token: `${token}`
+                }
+            });
+            if (response.status === 203) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                continue;
+            }
+            if (response.status === 401 || response.status === 423) {
+                const updated = await this.updateToken(userId);
+                console.log(updated);
+                if (updated === 1) {
+                    token = await this.getToken(userId);
+                    continue;
+                } else {
+                    return { code: -1, buffer: null };
+                }
+            }
+            if (response.status === 200) {
+                const buffer = await response.arrayBuffer();
+                return { code: 1, buffer };
+            }
+        }
+        return { code: 0, buffer: null };
+    }
 }
 
 export default new Utils();

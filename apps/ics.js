@@ -33,18 +33,20 @@ export class Ics extends plugin {
     async getCoursesIcs(e) {
         const userId = e.user_id;
 
-        const token = await Utils.getToken(userId);
-        if (!token) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
-
         try {
             if (!fs.existsSync(tmpPath)) {
                 fs.mkdirSync(tmpPath, { recursive: true });
             }
 
             const filePath = `${tmpPath}/${e.sender.nickname}的课表.ics`;
-            const buffer = await getIcs(token, 'courses.ics');
+            const { code, buffer } = await Utils.getIcs(userId, 'icalendar/courses');
+            if (code === -1) {
+                return this.reply('token已失效，请重新设置或刷新token。', true);
+            } else if (code === -2) {
+                return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。', true);
+            } else if (code === 0) {
+                return this.reply('获取课表日程失败，请稍后重试。', true);
+            }
             fs.writeFileSync(filePath, Buffer.from(buffer));
 
             if (e.isGroup) {
@@ -62,18 +64,20 @@ export class Ics extends plugin {
     async getExamsIcs(e) {
         const userId = e.user_id;
 
-        const token = await Utils.getToken(userId);
-        if (!token) {
-            return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。');
-        }
-
         try {
             if (!fs.existsSync(tmpPath)) {
                 fs.mkdirSync(tmpPath, { recursive: true });
             }
 
             const filePath = `${tmpPath}/${e.sender.nickname}的考试.ics`;
-            const buffer = await getIcs(token, 'exams.ics');
+            const { code, buffer } = await Utils.getIcs(userId, 'icalendar/exams');
+            if (code === -1) {
+                return this.reply('token已失效，请重新设置或刷新token。', true);
+            } else if (code === -2) {
+                return this.reply('未找到您的 token，发送 "#拱拱帮助" 查看token帮助。', true);
+            } else if (code === 0) {
+                return this.reply('获取考试日程失败，请稍后重试。', true);
+            }
             fs.writeFileSync(filePath, Buffer.from(buffer));
 
             if (e.isGroup) {
@@ -98,17 +102,21 @@ export class Ics extends plugin {
     }
 }
 
-async function getIcs(token, type) {
-    const url = `${api_address}/${type}?token=${token}`;
-    for (let i = 0; i < 8; i++) {
-        const response = await fetch(url);
-        const contentType = response.headers.get('content-type');
-        if (contentType.includes('application/json')) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            continue;
-        } else {
-            const buffer = await response.arrayBuffer();
-            return buffer;
-        }
-    }
-}
+// async function getIcs(token, type) {
+//     const url = `${api_address}/${type}`;
+//     for (let i = 0; i < 8; i++) {
+//         const response = await fetch(url, {
+//             headers: {
+//                 'token': token
+//             }
+//         });
+//         const contentType = response.headers.get('content-type');
+//         if (contentType.includes('application/json')) {
+//             await new Promise(resolve => setTimeout(resolve, 1000));
+//             continue;
+//         } else {
+//             const buffer = await response.arrayBuffer();
+//             return buffer;
+//         }
+//     }
+// }
