@@ -1,8 +1,8 @@
 
 
-![xtu-gong-plugin](https://socialify.git.ci/smr8890/xtu-gong-plugin/image?forks=1&issues=1&language=1&name=1&owner=1&pulls=1&stargazers=1&theme=Light)
+![gonggong-plugin](https://socialify.git.ci/smr8890/gonggong-plugin/image?forks=1&issues=1&language=1&name=1&owner=1&pulls=1&stargazers=1&theme=Light)
 
-# xtu-gong-plugin
+# gonggong-plugin
 
 - 一个提供湘潭大学课表、考试、成绩查询以及考试提醒的插件，适用于 [Yunzai 系列机器人框架](https://github.com/yhArcadia/Yunzai-Bot-plugins-index)
 
@@ -11,13 +11,13 @@
 #### 使用github
 
 ```bash
-git clone --depth=1 https://github.com/smr8890/xtu-gong-plugin.git ./plugins/xtu-gong-plugin
+git clone --depth=1 https://github.com/smr8890/gonggong-plugin.git ./plugins/gonggong-plugin
 ```
 
 #### 使用gitee
 
 ```bash
-git clone --depth=1 https://gitee.com/smr8890/xtu-gong-plugin.git ./plugins/xtu-gong-plugin
+git clone --depth=1 https://gitee.com/smr8890/gonggong-plugin.git ./plugins/gonggong-plugin
 ```
 
 安装完成后重启云崽即可使用

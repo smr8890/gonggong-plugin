@@ -5,7 +5,7 @@ import { Plugin_Path } from '../components/index.js';
 import puppeteer from '../../../lib/puppeteer/puppeteer.js';
 import { userListPath } from '../components/index.js';
 const exam_time = Config.getcfg.exam_time;
-const DataPath = './data/xtu-gong';
+const DataPath = './data/gonggong';
 const userScorePath = `${DataPath}/scores`;
 
 export class ScoreNotice extends plugin {
@@ -76,7 +76,7 @@ export class ScoreNotice extends plugin {
 
         let userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
         if (!fs.existsSync(userListPath)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
+            fs.mkdirSync('./data/gonggong', { recursive: true });
             fs.writeFileSync(userListPath, JSON.stringify({}), 'utf8');
         }
         userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));
@@ -166,7 +166,7 @@ export class ScoreNotice extends plugin {
                             });
 
                             scores = processedScores;
-                            const base64 = await puppeteer.screenshot('xtu-gong-plugin', {
+                            const base64 = await puppeteer.screenshot('gonggong-plugin', {
                                 saveId: 'score',
                                 imgType: 'png',
                                 tplFile: `${Plugin_Path}/resources/query/score.html`,

@@ -8,7 +8,7 @@ logger.info(chalk.magenta('-------------------------'));
 
 // 动态加载插件
 const files = fs
-    .readdirSync("./plugins/xtu-gong-plugin/apps")
+    .readdirSync("./plugins/gonggong-plugin/apps")
     .filter((file) => file.endsWith(".js"));
 
 let ret = [];

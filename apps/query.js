@@ -158,7 +158,7 @@ export class Query extends plugin {
                 return exam;
             });
 
-            const base64 = await puppeteer.screenshot('xtu-gong-plugin', {
+            const base64 = await puppeteer.screenshot('gonggong-plugin', {
                 saveId: 'exam',
                 imgType: 'png',
                 tplFile: `${Plugin_Path}/resources/query/exam.html`,
@@ -252,7 +252,7 @@ export class Query extends plugin {
             });
 
             scores = processedScores;
-            const base64 = await puppeteer.screenshot('xtu-gong-plugin', {
+            const base64 = await puppeteer.screenshot('gonggong-plugin', {
                 saveId: 'score',
                 imgType: 'png',
                 tplFile: `${Plugin_Path}/resources/query/score.html`,

@@ -15,7 +15,7 @@ export class Help extends plugin {
 
     async help(e) {
         let msg = '';
-        msg += `欢迎使用xtu-gong插件，以下是插件的使用说明：\n\n`;
+        msg += `欢迎使用gonggong插件，以下是插件的使用说明：\n\n`;
 
         msg += `账号相关:\n`;
         msg += `1. 使用 "#设置账号 账号 密码" 来设置账号\n`;

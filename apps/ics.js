@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Config } from '../components/index.js';
 import { Utils } from '../components/index.js';
 const api_address = Config.getcfg.api_address;
-const tmpPath = './data/xtu-gong/tmp';
+const tmpPath = './data/gonggong/tmp';
 
 export class Ics extends plugin {
     constructor() {
@@ -25,7 +25,7 @@ export class Ics extends plugin {
 
         this.task = {
             cron: '0 0 0 * * ?',
-            name: '[xtu-gong]清理临时文件',
+            name: '[gonggong]清理临时文件',
             fnc: () => this.clearTmp()
         }
     }

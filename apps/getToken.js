@@ -42,11 +42,11 @@ export class GetToken extends plugin {
         if (!username || !password) {
             return this.reply('请正确输入账号和密码');
         }
-        const path = './data/xtu-gong/userlist.json';
+        const path = './data/gonggong/userlist.json';
 
         let userList = {};
         if (!fs.existsSync(path)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
+            fs.mkdirSync('./data/gonggong', { recursive: true });
             fs.writeFileSync(path, JSON.stringify({}), 'utf8');
         }
         userList = JSON.parse(fs.readFileSync(path, 'utf8'));
@@ -92,11 +92,11 @@ export class GetToken extends plugin {
         if (!token) {
             return this.reply('请正确输入token');
         }
-        const path = './data/xtu-gong/userlist.json';
+        const path = './data/gonggong/userlist.json';
 
         let userList = {};
         if (!fs.existsSync(path)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
+            fs.mkdirSync('./data/gonggong', { recursive: true });
             fs.writeFileSync(path, JSON.stringify({}), 'utf8');
         }
         userList = JSON.parse(fs.readFileSync(path, 'utf8'));
@@ -134,7 +134,7 @@ export class GetToken extends plugin {
 
     async deleteAccount(e) {
         const userId = e.user_id;
-        const path = './data/xtu-gong/userlist.json';
+        const path = './data/gonggong/userlist.json';
 
         if (!fs.existsSync(path)) {
             return this.reply('没有账号可以删除');

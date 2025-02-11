@@ -61,7 +61,7 @@ class Utils {
     async getToken(userId) {
         let userList = {};
         if (!fs.existsSync(userListPath)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
+            fs.mkdirSync('./data/gonggong', { recursive: true });
             fs.writeFileSync(userListPath, JSON.stringify({}), 'utf8');
         }
         userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));

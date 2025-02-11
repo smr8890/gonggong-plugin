@@ -3,7 +3,7 @@ import { Config } from '../components/index.js';
 import { Utils } from '../components/index.js';
 import { userListPath } from '../components/index.js';
 const exam_time = Config.getcfg.exam_time;
-const examDir = './data/xtu-gong/exams';
+const examDir = './data/gonggong/exams';
 const advance_days = Config.getcfg.advance_days;
 
 export class ExamNotice extends plugin {
@@ -86,7 +86,7 @@ export class ExamNotice extends plugin {
         const userId = e.user_id;
         let userList = {};
         if (!fs.existsSync(userListPath)) {
-            fs.mkdirSync('./data/xtu-gong', { recursive: true });
+            fs.mkdirSync('./data/gonggong', { recursive: true });
             fs.writeFileSync(userListPath, JSON.stringify({}), 'utf8');
         }
         userList = JSON.parse(fs.readFileSync(userListPath, 'utf8'));

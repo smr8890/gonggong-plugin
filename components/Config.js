@@ -5,7 +5,7 @@ import YamlReader from "./YamlReader.js"
 import cfg from "../../../lib/config/config.js"
 
 const Path = process.cwd()
-const Plugin_Name = "xtu-gong-plugin"
+const Plugin_Name = "gonggong-plugin"
 const Plugin_Path = `${Path}/plugins/${Plugin_Name}`
 
 class Config {
@@ -129,7 +129,7 @@ class Config {
         watcher.on("change", path => {
             delete this.config[key]
             if (typeof Bot == "undefined") return
-            logger.mark(`[xtu-gong-Plugin][修改配置文件][${type}][${name}]`)
+            logger.mark(`[gonggong-Plugin][修改配置文件][${type}][${name}]`)
             if (this[`change_${name}`]) {
                 this[`change_${name}`]()
             }
