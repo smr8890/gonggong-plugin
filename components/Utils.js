@@ -19,7 +19,7 @@ class Utils {
             const response = await fetch(`${api_address}/${type}`, {
                 method: 'GET',
                 headers: {
-                    token: `${token}`
+                    Authorization: `Bearer ${token}`
                 }
             });
             if (response.status === 203) {
@@ -41,19 +41,6 @@ class Utils {
                 break;
             }
             data = { code: 0 };
-            // if (data.code === 0 || data.code === -1) {
-            //     const updated = await this.updateToken(userId);
-            //     if (updated) {
-            //         token = await this.getToken(userId);
-            //         continue;
-            //     } else {
-            //         break;
-            //     }
-            // }
-            // if (data.code === 1 && data.data) {
-            //     break;
-            // }
-            // await new Promise(resolve => setTimeout(resolve, 1000));
         }
         return data;
     }
@@ -91,9 +78,9 @@ class Utils {
         const response = await fetch(`${api_address}/login`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: JSON.stringify({ username, password })
+            body: new URLSearchParams({ username, password })
         });
 
         if (response.status === 401) {
@@ -114,7 +101,7 @@ class Utils {
         //     return false;
         // }
 
-        userList[userId].token = result.data.token;
+        userList[userId].token = result.access_token;
         fs.writeFileSync(userListPath, JSON.stringify(userList, null, 2), 'utf8');
         return 1;
     }
@@ -133,7 +120,7 @@ class Utils {
             const response = await fetch(`${api_address}/${type}`, {
                 method: 'GET',
                 headers: {
-                    token: `${token}`
+                    Authorization: `Bearer ${token}`
                 }
             });
             if (response.status === 203) {

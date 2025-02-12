@@ -61,9 +61,9 @@ export class GetToken extends plugin {
         const response = await fetch(`${api_address}/login`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: JSON.stringify({ username, password })
+            body: new URLSearchParams({ username, password }).toString()
         });
 
         if (!response.ok) {
@@ -71,11 +71,8 @@ export class GetToken extends plugin {
         }
 
         const result = await response.json();
-        if (result.code !== 1) {
-            return this.reply('登录失败，请检查账号和密码');
-        }
 
-        userList[userId].token = result.data.token;
+        userList[userId].token = result.access_token;
         const encodedUsername = Buffer.from(username).toString('base64');
         const encodedPassword = Buffer.from(password).toString('base64');
 
