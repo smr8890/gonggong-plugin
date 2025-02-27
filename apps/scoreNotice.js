@@ -119,6 +119,12 @@ export class ScoreNotice extends plugin {
                             const rank = result2.data;
                             fs.writeFileSync(scoreFilePath, JSON.stringify(scores, null, 2), 'utf8');
 
+                            const credit = {
+                                total: result1.data.total_credit,
+                                elective: result1.data.elective_credit,
+                                compulsory: result1.data.compulsory_credit,
+                                cross_course: result1.data.cross_course_credit
+                            };
                             // 对 scores 进行预处理，按学期和课程类型分组
                             function getTermName(termNumber) {
                                 const terms = [
@@ -171,6 +177,7 @@ export class ScoreNotice extends plugin {
                                 imgType: 'png',
                                 tplFile: `${Plugin_Path}/resources/query/score.html`,
                                 scores: scores,
+                                credit: credit,
                                 rank: rank,
                             });
                             Bot.pickUser(userId).sendMsg(`你有新的成绩出炉啦！`);

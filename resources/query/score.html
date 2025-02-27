@@ -47,6 +47,23 @@
             line-height: 0.3;
         }
 
+        .credit-summary {
+            /* 背景颜色设置为白色 */
+            background-color: #ffffff;
+            /* 内边距设置为20px */
+            padding: 20px;
+            /* 宽度设置为80% */
+            width: 80%;
+            /* 上下左右的外边距设置为自动，以实现居中 */
+            margin: 15px auto 0 auto;
+            /* 添加阴影效果 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* 边框圆角半径为30px */
+            border-radius: 25px;
+            /* margin-top: -10px; */
+            line-height: 0.1;
+        }
+
         .score-summary {
             background-color: #ffffff;
             padding: 20px;
@@ -144,6 +161,23 @@
                 <div>
                     <h3>{{ rank.average_score }}</h3>
                     <p>平均成绩</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="credit-summary">
+            <div class="container">
+                <div>
+                    <h3>{{credit.compulsory[1]}}/{{credit.compulsory[0]}}</h3>
+                    <p>必修学分</p>
+                </div>
+                <div>
+                    <h3>{{credit.elective[1]}}/{{credit.elective[0]}}</h3>
+                    <p>选修学分</p>
+                </div>
+                <div>
+                    <h3>{{credit.cross_course[1]}}/{{credit.cross_course[0]}}</h3>
+                    <p>跨学科选修学分</p>
                 </div>
             </div>
         </div>

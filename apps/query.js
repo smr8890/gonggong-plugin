@@ -204,6 +204,12 @@ export class Query extends plugin {
             }
 
             let scores = result1.data.scores;
+            const credit = {
+                total: result1.data.total_credit,
+                elective: result1.data.elective_credit,
+                compulsory: result1.data.compulsory_credit,
+                cross_course: result1.data.cross_course_credit
+            };
             const rank = result2.data;
             // 对 scores 进行预处理，按学期和课程类型分组
             function getTermName(termNumber) {
@@ -257,6 +263,7 @@ export class Query extends plugin {
                 imgType: 'png',
                 tplFile: `${Plugin_Path}/resources/query/score.html`,
                 scores: scores,
+                credit: credit,
                 rank: rank,
             });
             return this.reply(base64);
