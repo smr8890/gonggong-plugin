@@ -31,8 +31,8 @@ export function supportGuoba() {
                 {
                     field: 'exam_time',
                     label: '考试提醒时间',
-                    bottomHelpMessage: '请填写考试提醒时间，cron表达式',
-                    component: 'Input',
+                    bottomHelpMessage: '请填写或选择定时表达式',
+                    component: 'EasyCron',
                     componentProps: {
                         placeholder: '请填写考试提醒时间',
                     }
