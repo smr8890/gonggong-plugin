@@ -98,6 +98,7 @@ export class ScoreNotice extends plugin {
                 if (userList[userId].scoreNotice) {
                     const scoreFilePath = `${userScorePath}/${userId}.json`;
                     if (fs.existsSync(scoreFilePath)) {
+                        await Utils.updateToken(userId);
                         let result1 = await Utils.getResponse(userId, 'scores');
                         // if (result1.code === 0 || result1.code === -1) {
                         //     const updated = await updateToken(userId);
